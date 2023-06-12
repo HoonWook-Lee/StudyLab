@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import logout
+from django.http.response import JsonResponse
 from core.user.forms import *
+from core.user.func import *
 
 
 # 회원가입
@@ -23,3 +25,12 @@ def logout_view(request):
     logout(request)
 
     return redirect('login')
+
+# 아이디 중복 확인
+def user_check(request):
+
+    user_id = request.GET.get('user_id')
+
+    res = user_check_func(user_id)
+
+    return JsonResponse(data=dict(msg=res[0], check=res[1]), status=res[2], safe=False)

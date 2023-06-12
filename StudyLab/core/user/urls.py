@@ -11,4 +11,7 @@ urlpatterns = [
 
     # 로그아웃
     path('logout', logout_view, name='logout'),
+
+    # 아이디 중복 확인
+    path('check', user_check, name='user_check'),
 ]
