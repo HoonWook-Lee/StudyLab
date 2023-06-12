@@ -17,6 +17,12 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
+# View 함수
+from core.views import *
+
 urlpatterns = [
     path('admin/', admin.site.urls),
+
+    # 메인 화면
+    path('', index, name='index'),
 ]
