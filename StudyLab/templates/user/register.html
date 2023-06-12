@@ -1,0 +1,74 @@
+{% extends "user/layout.html" %}
+
+{% load static %}
+
+{% block content %}
+<!-- Content -->
+
+<div class="container-xxl">
+    <div class="authentication-wrapper authentication-basic container-p-y">
+        <div class="authentication-inner">
+            <!-- Register -->
+            <div class="card">
+                <div class="card-body">
+                    <!-- Logo -->
+                    <div class="app-brand justify-content-center">
+                        <a href="{% url 'index'%}" class="app-brand-link gap-2">
+                            <span class="app-brand-logo demo">
+                                <img src="{% static 'assets/main.png' %}" alt="" width="130px" height="70px">
+                            </span>
+                            <span class="app-brand-text demo text-body fw-bolder">블로그</span>
+                        </a>
+                    </div>
+                    <!-- /Logo -->
+                    <h4 class="mb-2">가입을 환영합니다! 🚀</h4><br/>
+
+                    <form id="RegisterForm" class="mb-3" method="POST">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="user_id" class="form-label">아이디</label>
+                            <div class="input-group input-group-merge">
+                                {{ form.user_id }}
+                                <span class="input-group-text cursor-pointer userCheck"><i class="fa-solid fa-user-check"></i></span>
+                            </div>
+
+                        </div>
+                        <div class="mb-3">
+                            <label for="hint" class="form-label">기억에 남는 한마디</label>
+                            {{ form.hint }}
+                        </div>
+                        <div class="mb-3 form-password-toggle">
+                            <label class="form-label" for="password">비밀번호</label>
+                            <div class="input-group input-group-merge">
+                                {{ form.password }}
+                                <span class="input-group-text cursor-pointer"><i id="change-eye" class="fa-solid fa-eye"></i></span>
+                            </div>
+                        </div>
+                        <div class="mb-3 form-password-toggle">
+                            <label class="form-label" for="check_password">비밀번호 확인</label>
+                            <div class="input-group input-group-merge">
+                                {{ form.check_password }}
+                                <span class="input-group-text cursor-pointer"><i id="change-eye1" class="fa-solid fa-eye"></i></span>
+                            </div>
+                        </div>
+                        {{ form.check }}
+                        <button class="btn btn-primary d-grid w-100">회원가입 하기</button>
+                    </form>
+                    <p class="text-center">
+                        <span>회원가입이 되어 있나요?</span>
+                        <a href="{% url 'login'%}">
+                            <span>로그인 하기</span>
+                        </a>
+                    </p>
+                </div>
+            </div>
+        <!-- /Register -->
+        </div>
+    </div>
+</div>
+
+<!-- / Content -->
+<div class="buy-now">
+    <a href="{% url 'index'%}" class="btn btn-danger btn-buy-now">대시보드</a>
+</div>
+{% endblock %}

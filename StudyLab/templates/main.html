@@ -36,3 +36,18 @@
 <!-- / Content -->
 
 {% endblock %}
+
+{% block link %}
+
+    {% if user.is_anonymous %}
+        <div class="buy-now">
+            <a href="{% url 'login'%}"class="btn btn-danger btn-buy-now"> 로그인 </a>
+        </div>
+    {% endif %}
+    {% if user.is_authenticated %}
+        <div class="buy-now">
+            <a href="{% url 'logout'%}"class="btn btn-danger btn-buy-now"> 로그 아웃 </a>
+        </div>
+    {% endif %}
+
+{% endblock %}

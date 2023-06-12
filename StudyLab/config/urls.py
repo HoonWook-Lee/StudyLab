@@ -16,6 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from django.conf.urls import include
 
 # View 함수
 from core.views import *
@@ -25,4 +26,7 @@ urlpatterns = [
 
     # 메인 화면
     path('', index, name='index'),
+
+    # 사용자 관련 화면
+    path('user/', include('core.user.urls')),
 ]

@@ -51,6 +51,23 @@
                             </div>
                         </a>
                     </li>
+                    <li>
+                        <div class="dropdown-divider"></div>
+                    </li>
+                    <li>
+                        {% if user.is_anonymous %}
+                            <a class="dropdown-item" href="{% url 'login'%}">
+                                <i class="bx bx-power-off me-2"></i>
+                                <span class="align-middle">Login</span>
+                            </a>
+                        {% endif %}
+                        {% if user.is_authenticated %}
+                            <a class="dropdown-item" href="{% url 'logout'%}">
+                                <i class="bx bx-power-off me-2"></i>
+                                <span class="align-middle">Log Out</span>
+                            </a>
+                        {% endif %}
+                    </li>
                 </ul>
             </li>
 
