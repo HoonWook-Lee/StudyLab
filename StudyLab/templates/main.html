@@ -12,10 +12,18 @@
                     <div class="d-flex align-items-end row">
                         <div class="col-sm-7">
                             <div class="card-body">
-                                <h5 class="card-title text-primary">StudyLab에 오신 것을 환영합니다! 🎉</h5>
-                                <p class="mb-4">
-                                    우리의 <span class="fw-bold">Coding </span>블로그
-                                </p>
+                                {% if user.is_anonymous %}
+                                    <h5 class="card-title text-primary">StudyLab에 오신 것을 환영합니다! 🎉</h5>
+                                    <p class="mb-4">
+                                        우리의 <span class="fw-bold">Coding </span>블로그
+                                    </p>
+                                {% endif %}
+                                {% if user.is_authenticated %}
+                                    <h5 class="card-title text-primary">{{user.username}}님 StudyLab에 오신 것을 환영합니다! 🎉</h5>
+                                    <p class="mb-4">
+                                        우리의 <span class="fw-bold">Coding </span>블로그
+                                    </p>
+                                {% endif %}
                                 <a href="#" class="btn btn-sm btn-outline-primary">Link 이동하기</a>
                             </div>
                         </div>

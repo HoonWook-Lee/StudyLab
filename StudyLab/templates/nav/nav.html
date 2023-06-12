@@ -45,8 +45,14 @@
                                     </div>
                                 </div>
                                 <div class="flex-grow-1">
-                                    <span class="fw-semibold d-block">방문객</span>
-                                    <small class="text-muted">GUEST</small>
+                                    {% if user.is_anonymous %}
+                                        <span class="fw-semibold d-block">방문객</span>
+                                        <small class="text-muted">GUEST</small>
+                                    {% endif %}
+                                    {% if user.is_authenticated %}
+                                        <span class="fw-semibold d-block">{{user.username}}</span>
+                                        <small class="text-muted">Member</small>
+                                    {% endif %}
                                 </div>
                             </div>
                         </a>

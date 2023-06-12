@@ -24,9 +24,18 @@ def register_view(request):
 # 로그인
 def login_view(request):
 
-    form = LoginForm()
+    # POST 요청 확인
+    if request.method == 'POST':
+        form = LoginForm(request.POST)
+        res = (
+            lambda f : f.login(request, f.cleaned_data) if f.is_valid() else ('올바르지 않은 데이터 입니다.', 'error', 422)
+        )(form)
 
-    return render(request, 'user/login.html', {'form' : form})
+        return JsonResponse(data=dict(msg=res[0], check=res[1]), status=res[2], safe=False)
+    else:
+        form = LoginForm()
+
+        return render(request, 'user/login.html', {'form' : form})
 
 # 로그아웃
 def logout_view(request):

@@ -1,6 +1,7 @@
 from django import forms
 from re import match as re_match
-from argon2 import PasswordHasher
+from argon2 import PasswordHasher, exceptions
+from django.contrib.auth import login
 from core.models import Users
 
 
@@ -65,3 +66,30 @@ class LoginForm(forms.Form):
         'id' : 'password', 'class' : 'form-control', 'placeholder' : '비밀번호를 입력해주세요',
         'aria-describedby' : 'password', 'autocomplete' : 'off'
     }))
+
+    # 로그인
+    def login(self, request, data):
+        
+        res = ('올바른 유저ID와 패스워드를 \n 입력하여 주세요.', 'error', 422)
+
+        user_id = data.get('user_id')
+
+        try:
+            # 등록 정보 확인
+            user = Users.objects.get(username=user_id)
+        except Users.DoesNotExist:
+            pass
+        else:
+            # 비밀번호 확인
+            try:
+                # 앞의 argon2 제거 후 비교
+                PasswordHasher().verify(user.password[6:], data.get('password'))
+            except exceptions.VerifyMismatchError:
+                pass
+            else:
+                # 성공
+                login(request, user)
+
+                res = ('로그인에 성공하였습니다.', 'success', 200)
+
+        return res

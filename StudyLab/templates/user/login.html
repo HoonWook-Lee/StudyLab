@@ -5,7 +5,7 @@
 {% block content %}
 <!-- Content -->
 
-<div class="container-xxl">
+<div id="vue_div" class="container-xxl">
     <div class="authentication-wrapper authentication-basic container-p-y">
         <div class="authentication-inner">
             <!-- Register -->
@@ -24,7 +24,7 @@
                     <h4 class="mb-2">블로그에 오신 것을 환영합니다! 👋</h4><br/>
 
                     {% if user.is_anonymous %}
-                        <form id="LoginForm" class="mb-3" method="POST">
+                        <form id="LoginForm" class="mb-3" method="POST" onsubmit="return false">
                     {% endif %}
                     {% if user.is_authenticated %}
                         <form id="LogoutForm" class="mb-3" action="{% url 'logout' %}">
@@ -49,7 +49,7 @@
                                 </div>
                             </div>
                             <div class="mb-3">
-                                <button class="btn btn-primary d-grid w-100" type="submit">로그인 하기</button>
+                                <button @click="loginUser()" class="btn btn-primary d-grid w-100" type="submit">로그인 하기</button>
                             </div>
                         {% endif %}
                         {% if user.is_authenticated %}
@@ -81,3 +81,35 @@
     <a href="{% url 'index'%}" class="btn btn-danger btn-buy-now">대시보드</a>
 </div>
 {% endblock %}
+
+{% block script %}
+    <script type="text/javascript">
+
+        var csrftoken = getCookie('csrftoken');
+
+        let vm = new Vue({
+            delimiters: ['[[', ']]'],
+            el: '#vue_div',
+            methods: {
+                loginUser: function () {
+                    axios.post(
+                        `/user/login`, document.querySelector('#LoginForm'), {
+                            headers : {
+                                'Content-Type' : 'multipart/form-data',
+                                'X-CSRFToken': csrftoken
+                            }
+                        }
+                    ).then(function (response) {
+                        Swal.fire(response.data.msg, '', response.data.check)
+                        setTimeout("location.href='/'", 1000)
+                    }).catch(function (e) {
+                        Swal.fire(e.response.data.msg, '', e.response.data.check)
+                    }).finally(function () {
+
+                    });
+                }
+            }
+        })
+    </script>
+{% endblock %}
+
