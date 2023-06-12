@@ -23,7 +23,7 @@
                     <!-- /Logo -->
                     <h4 class="mb-2">가입을 환영합니다! 🚀</h4><br/>
 
-                    <form id="RegisterForm" class="mb-3" method="POST">
+                    <form id="RegisterForm" class="mb-3" method="POST" onsubmit="return false">
                         {% csrf_token %}
                         <div class="mb-3">
                             <label for="user_id" class="form-label">아이디</label>
@@ -52,7 +52,7 @@
                             </div>
                         </div>
                         {{ form.check }}
-                        <button class="btn btn-primary d-grid w-100">회원가입 하기</button>
+                        <button @click="registerUser()" class="btn btn-primary d-grid w-100">회원가입 하기</button>
                     </form>
                     <p class="text-center">
                         <span>회원가입이 되어 있나요?</span>
@@ -75,6 +75,25 @@
 
 {% block script %}
     <script type="text/javascript">
+        /** Cookie에서 토큰 가져오기 **/
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        var csrftoken = getCookie('csrftoken');
+
         let vm = new Vue({
             delimiters: ['[[', ']]'],
             el: '#vue_div',
@@ -91,6 +110,23 @@
                     }).catch(function (e) {
                         Swal.fire(e.response.data.msg, '', e.response.data.check)
                     })
+                },
+                registerUser: function () {
+                    axios.post(
+                        `/user/register`, document.querySelector('#RegisterForm'), {
+                            headers : {
+                                'Content-Type' : 'multipart/form-data',
+                                'X-CSRFToken': csrftoken
+                            }
+                        }
+                    ).then(function (response) {
+                        Swal.fire(response.data.msg, '', response.data.check)
+                        setTimeout("location.href='/user/login'", 1000)
+                    }).catch(function (e) {
+                        Swal.fire(e.response.data.msg, '', e.response.data.check)
+                    }).finally(function () {
+                        
+                    });
                 }
             }
         });

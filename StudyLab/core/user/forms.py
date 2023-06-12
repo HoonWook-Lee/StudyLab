@@ -1,4 +1,7 @@
 from django import forms
+from re import match as re_match
+from argon2 import PasswordHasher
+from core.models import Users
 
 
 # 회원가입 Form
@@ -24,6 +27,32 @@ class RegisterForm(forms.Form):
     check = forms.CharField(max_length=100, required=True, widget=forms.HiddenInput(attrs={
         'id' : 'check', 'class' : 'form-control', 'value' : 'False'
     }))
+
+    # 회원가입
+    def save(self, data):
+        # 6자 이상, 최소 하나의 문자, 숫자, 특수 문자를 포함한 문자
+        pw = data.get('password')
+        result = re_match('^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{6,}$', pw)
+
+        # 가능 유무 확인
+        if data.get('check') == 'False':
+            res = ('아이디 중복 확인 체크 후 \n 다시 시도하여 주세요.', 'error', 422)
+        elif result is None:
+            res = ('비밀번호는 반드시 하나 이상의 \n 영문자, 숫자, 특수 문자를 포함한 \n 6자리 이상 조합이여야 합니다.', 'error', 422)
+        elif pw != data.get('check_password'):
+            res = ('비밀번호가 일치하지 않습니다.', 'error', 422)
+        else:
+            # 회원 가입
+            user = Users(
+                username = data.get('user_id'), 
+                password = 'argon2' + PasswordHasher().hash(pw), # PasswordHasher와 Django Argon2의 차이 제거
+                hint = data.get('hint')
+            )
+            user.save()
+            
+            res = ('회원 가입이 완료되었습니다.', 'success',  200)
+
+        return res
 
 
 # 로그인 Form
