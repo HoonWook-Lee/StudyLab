@@ -104,3 +104,49 @@ class AuthTestCase(TestCase):
         request = c.post('/user/login', body)
 
         self.assertEqual(request.status_code, 200)
+
+    # 초기화 Test
+    def test_reset(self):
+        c = Client()
+
+        # 비밀번호 힌트가 맞지 않음
+        body = {'user_id': 'test_user', 'hint': 'not_answer'}
+        request = c.post('/user/reset', body)
+
+        self.assertEqual(request.status_code, 422)
+
+        # 초기화 성공
+        body = {'user_id': 'test_user', 'hint': 'answer'}
+        request = c.post('/user/reset', body)
+
+        self.assertEqual(request.status_code, 200)
+
+    # 비밀번호 변경 Test
+    def test_change(self):
+        c = Client()
+
+        # 로그인
+        body = {'user_id' : 'test_user', 'password' : 'qwer12#$'}
+        request = c.post('/user/login', body)
+
+        # 비밀번호 조건 오류 (6자리 미만)
+        body = {'user_id' : 'test_user', 'password' : '12', 'check_password' : '12'}
+        request = c.post('/user/change', body)
+
+        self.assertEqual(request.status_code, 422)
+
+        # 비밀번호 조건 오류 (특수 문자 미 포함)
+        body = {'user_id' : 'tester', 'password' : 'qw45er', 'check_password' : 'qw45er'}
+        request = c.post('/user/register', body)
+
+        self.assertEqual(request.status_code, 422)
+
+        # 비밀번호 매칭 오류
+        body = {'user_id' : 'tester', 'password' : 'qw12!@', 'check_password' : '1234'}
+        request = c.post('/user/register', body)
+
+        # 비밀번호 변경 성공
+        body = {'user_id' : 'test_user', 'password' : 'qw12!@', 'check_password' : 'qw12!@'}
+        request = c.post('/user/change', body)
+
+        self.assertEqual(request.status_code, 200)
