@@ -11,6 +11,7 @@ db.sqlite3
 db.sqlite3-journal
 media
 StudyLab/static
+drf_api_server/static
 
 
 # If your build process includes running collectstatic, then you probably don't need or want to include staticfiles/

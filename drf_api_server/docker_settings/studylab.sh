@@ -10,8 +10,5 @@ echo yes | python3 manage.py collectstatic
 python3 manage.py makemigrations 
 python3 manage.py migrate
 
-# 실행 폴더 생성 (있다면 패스)
-mkdir -p run
-
-# gunicorn 실행
-gunicorn --bind unix:/var/www/studylab/run/gunicorn.sock config.wsgi:application
+# Uvicorn 실행
+uvicorn config.asgi:application --host=0.0.0.0 --port=5000
