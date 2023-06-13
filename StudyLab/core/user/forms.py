@@ -1,7 +1,7 @@
 from django import forms
 from re import match as re_match
 from argon2 import PasswordHasher, exceptions
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
 from random import randrange
 from core.models import Users
 
@@ -124,5 +124,44 @@ class ResetForm(forms.Form):
                 user.save()
 
                 res = (f'변경된 비밀번호는 {random_number}입니다. \n 로그인 후 비밀번호를 변경하여 주세요.', 'success', 200)
+
+        return res
+    
+# 비밀번호 변경 Form
+class ChangeForm(forms.Form):
+    user_id = forms.CharField(max_length=100, required=True, widget=forms.TextInput(attrs={
+        'id' : 'user_id', 'class' : 'form-control', 'placeholder' : '아이디를 입력해주세요', 'autofocus' : 'autofocus'
+    }))
+
+    password = forms.CharField(max_length=100, required=True, widget=forms.PasswordInput(attrs={
+        'id' : 'password', 'class' : 'form-control', 'placeholder' : '비밀번호를 입력해주세요',
+        'aria-describedby' : 'password', 'autocomplete' : 'off'
+    }))
+
+    check_password = forms.CharField(max_length=100, required=True, widget=forms.PasswordInput(attrs={
+        'id' : 'check_password', 'class' : 'form-control', 'placeholder' : '비밀번호를 한번 더 입력해주세요',
+        'aria-describedby' : 'password', 'autocomplete' : 'off'
+    }))
+
+    # 비밀번호 변경
+    def change(self, request, data):
+        # 6자 이상, 최소 하나의 문자, 숫자, 특수 문자를 포함한 문자
+        pw = data.get('password')
+        result = re_match('^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{6,}$', pw)
+
+        # 가능 유무 확인
+        if result is None:
+            res = ('비밀번호는 반드시 하나 이상의 \n 영문자, 숫자, 특수 문자를 포함한 \n 6자리 이상 조합이여야 합니다.', 'error', 422)
+        elif pw != data.get('check_password'):
+            res = ('비밀번호가 일치하지 않습니다.', 'error', 422)
+        else:
+            # 비밀번호 변경
+            user = Users.objects.get(pk=request.user.id)
+            user.password = 'argon2' + PasswordHasher().hash(pw)
+            user.save()
+
+            logout(request)
+            
+            res = ('비밀번호 변경이 완료되었습니다.', 'success',  200)
 
         return res

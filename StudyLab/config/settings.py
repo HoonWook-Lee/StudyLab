@@ -68,6 +68,9 @@ PASSWORD_HASHERS = [
 
 ROOT_URLCONF = 'config.urls'
 
+# 로그인 URL 지정
+LOGIN_URL = '/user/login'
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',

@@ -57,6 +57,15 @@
                             </div>
                         </a>
                     </li>
+                    {% if user.is_authenticated %}
+                        <li>
+                            <div class="dropdown-divider"></div>
+                        </li>
+                        <a class="dropdown-item" href="{% url 'pw_change'%}">
+                            <i class="bx bx-power-off me-2"></i>
+                            <span class="align-middle">비밀번호 변경</span>
+                        </a>
+                    {% endif %}
                     <li>
                         <div class="dropdown-divider"></div>
                     </li>

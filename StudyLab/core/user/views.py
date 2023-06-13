@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import logout
 from django.http.response import JsonResponse
+from django.contrib.auth.decorators import login_required
 from core.user.forms import *
 from core.user.func import *
 
@@ -68,3 +69,23 @@ def pw_reset(request):
         form = ResetForm()
 
         return render(request, 'user/reset.html', {'form' : form})
+    
+# 비밀번호 변경
+@login_required
+def pw_change(request):
+
+    # 유저 확인
+    user = Users.objects.get(pk=request.user.id)
+
+    # POST 요청 확인
+    if request.method == 'POST':
+        form = ChangeForm(request.POST)
+        res = (
+            lambda x : x.change(request, x.cleaned_data) if x.is_valid() else ('올바르지 않은 데이터 입니다.', 'error', 422)
+        )(form)
+
+        return JsonResponse(data=dict(msg=res[0], check=res[1]), status=res[2], safe=False)
+    else:
+        form = ChangeForm()
+
+        return render(request, 'user/change.html', {'form' : form, 'user_id' : user})

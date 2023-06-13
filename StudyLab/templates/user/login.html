@@ -87,6 +87,8 @@
 
         var csrftoken = getCookie('csrftoken');
 
+        urlSearch = new URLSearchParams(location.search);
+
         let vm = new Vue({
             delimiters: ['[[', ']]'],
             el: '#vue_div',
@@ -101,12 +103,18 @@
                         }
                     ).then(function (response) {
                         Swal.fire(response.data.msg, '', response.data.check)
-                        setTimeout("location.href='/'", 1000)
+                        if (urlSearch.get('next') != null) {
+                            setTimeout(`location.href='${urlSearch.get('next')}'`, 1000)
+                        }else {
+                            setTimeout("location.href='/'", 1000)
+                        }
                     }).catch(function (e) {
-                        Swal.fire(e.response.data.msg, '', e.response.data.check)
-                    }).finally(function () {
-
-                    });
+                        if (e.response.data.msg == null) {
+                            Swal.fire('서버에 오류가 발생하였습니다. \n 잠시 후 다시 이용해주세요.', '', 'error')
+                        }else{
+                            Swal.fire(e.response.data.msg, '', e.response.data.check)
+                        }
+                    })
                 }
             }
         })

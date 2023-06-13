@@ -21,21 +21,16 @@
                         </a>
                     </div>
                     <!-- /Logo -->
-                    <h4 class="mb-2">가입을 환영합니다! 🚀</h4><br/>
+                    <h4 class="mb-2">🔒 비밀번호 변경 </h4>
+                    <p style="margin-top:20px;color:red;" class="mb-4">
+                        비밀번호 초기화 시 비밀번호를 반드시 변경하여 주세요.
+                    </p>
 
-                    <form id="RegisterForm" class="mb-3" method="POST" onsubmit="return false">
+                    <form id="ChangeForm" class="mb-3" onsubmit="return false">
                         {% csrf_token %}
                         <div class="mb-3">
                             <label for="user_id" class="form-label">아이디</label>
-                            <div class="input-group input-group-merge">
-                                {{ form.user_id }}
-                                <span @click="checkId()" class="input-group-text cursor-pointer userCheck"><i class="fa-solid fa-user-check"></i></span>
-                            </div>
-
-                        </div>
-                        <div class="mb-3">
-                            <label for="hint" class="form-label">기억에 남는 한마디</label>
-                            {{ form.hint }}
+                            {{ form.user_id }}
                         </div>
                         <div class="mb-3 form-password-toggle">
                             <label class="form-label" for="password">비밀번호</label>
@@ -51,30 +46,31 @@
                                 <span class="input-group-text cursor-pointer"><i id="change-eye1" class="fa-solid fa-eye"></i></span>
                             </div>
                         </div>
-                        {{ form.check }}
-                        <button @click="registerUser()" class="btn btn-primary d-grid w-100">회원가입 하기</button>
+                        <div class="mb-3">
+                            <button @click="changePw()" class="btn btn-primary d-grid w-100">비밀번호 변경</button>
+                        </div>
                     </form>
-                    <p class="text-center">
-                        <span>회원가입이 되어 있나요?</span>
-                        <a href="{% url 'login'%}">
-                            <span>로그인 하기</span>
-                        </a>
-                    </p>
                 </div>
             </div>
-        <!-- /Register -->
+            <!-- /Register -->
         </div>
     </div>
 </div>
 
 <!-- / Content -->
+
 <div class="buy-now">
     <a href="{% url 'index'%}" class="btn btn-danger btn-buy-now">대시보드</a>
 </div>
 {% endblock %}
 
 {% block script %}
+    <script src="{% static 'js/common.js' %}"></script>
+    
     <script type="text/javascript">
+        /** 아이디 확인 **/
+        $('#user_id').attr('value', '{{user_id}}');
+        document.getElementById('user_id').readOnly = true;
 
         var csrftoken = getCookie('csrftoken');
 
@@ -82,22 +78,9 @@
             delimiters: ['[[', ']]'],
             el: '#vue_div',
             methods: {
-                checkId: function () {
-                    let user_id = document.getElementById('user_id');
-
-                    axios.get(
-                        `/user/check?user_id=${user_id.value}`
-                    ).then(function (response) {
-                        Swal.fire(response.data.msg, '', response.data.check)
-                        document.getElementById('check').value = 'True';
-                        user_id.readOnly=true;
-                    }).catch(function (e) {
-                        Swal.fire(e.response.data.msg, '', e.response.data.check)
-                    })
-                },
-                registerUser: function () {
+                changePw: function () {
                     axios.post(
-                        `/user/register`, document.querySelector('#RegisterForm'), {
+                        `/user/change`, document.querySelector('#ChangeForm'), {
                             headers : {
                                 'Content-Type' : 'multipart/form-data',
                                 'X-CSRFToken': csrftoken
@@ -116,5 +99,6 @@
                 }
             }
         });
+
     </script>
-{% endblock %}
+{% endblock %} 

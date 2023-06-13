@@ -17,4 +17,7 @@ urlpatterns = [
 
     # 비밀번호 초기화
     path('reset', pw_reset, name='pw_reset'),
+
+    # 비밀번호 변경
+    path('change', pw_change, name='pw_change'),
 ]
