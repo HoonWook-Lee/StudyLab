@@ -16,7 +16,26 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from django.conf.urls import include
+
+# View 함수
+from core.views import *
+
+# rest_framework
+from rest_framework import routers
+from core.keyword.apis import KeywordViewSet
+
+# router 지정
+router = routers.DefaultRouter()
+router.register(r'keywords', KeywordViewSet)
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+
+    # 메인 화면 = docs
+    path('', index, name='index'),
+
+    # rest_framework
+    path('apis/', include(router.urls)),
 ]

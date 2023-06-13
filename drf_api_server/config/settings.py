@@ -60,6 +60,16 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'config.urls'
 
+# DRF 설정
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 9,
+    'DEFAULT_PERMISSION_CLASSES': [
+        # GET 제외 자격 인증 ( 로그인 시 ) | IsAuthenticated : 모두
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+    ]
+}
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',

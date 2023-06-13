@@ -1,3 +1,7 @@
-from django.shortcuts import render
+from django.shortcuts import redirect
 
-# Create your views here.
+
+# 메인 화면 페이지 => /api/docs로 이동
+def index(request):
+
+    return redirect('/apis')
