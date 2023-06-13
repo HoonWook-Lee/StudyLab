@@ -109,6 +109,12 @@ ROOT_URLCONF = 'config.urls'
 # 로그인 URL 지정
 LOGIN_URL = '/user/login'
 
+# 세션 시간 지정 = 1주
+SESSION_COOKIE_AGE = 604800
+
+# DRF domain
+DRF_DOMAIN = 'http://localhost:5000'
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',

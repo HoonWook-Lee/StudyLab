@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 import os
 import environ
 from pathlib import Path
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -29,10 +30,64 @@ environ.Env.read_env(
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env('SECRET_KEY')
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# 개발 배포 설정 분리
+ENV = os.environ.get("DJANGO_ENV", "dev")
 
-ALLOWED_HOSTS = []
+if ENV == 'dev':
+    DEBUG = True
+    ALLOWED_HOSTS = eval(env('DEV_ALLOWED_HOSTS'))
+
+    # CORS 허용 호스트
+    CORS_ORIGIN_WHITELIST = (
+        eval(env('CORS_DEV_WHITELIST'))
+    )
+
+    # 쿠키 허용
+    CORS_ALLOW_CREDENTIALS = True
+
+    # MySQL 설정
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': env('DB_SUB_NAME'),
+            'USER': env('DB_SUB_USER'),
+            'PASSWORD': env('DB_SUB_PASSWORD'),
+            'HOST': env('DB_SUB_HOST'),
+            'PORT': env('DB_SUB_PORT'),
+            'OPTIONS': {
+                'autocommit': True,
+                'charset': 'utf8mb4'
+            }
+        }
+    }
+
+else:
+    DEBUG = False
+    ALLOWED_HOSTS = eval(env('DEPLOY_ALLOWED_HOSTS'))
+
+    # CORS 허용 호스트 : 배포 시 해당 도메인 주소로 변경
+    CORS_ORIGIN_WHITELIST = (
+        eval(env('CORS_DEPLOY_WHITELIST'))
+    )
+
+    # 쿠키 허용
+    CORS_ALLOW_CREDENTIALS = True
+
+    # MySQL 설정
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': env('DB_NAME'),
+            'USER': env('DB_USER'),
+            'PASSWORD': env('DB_PASSWORD'),
+            'HOST': env('DB_HOST'),
+            'PORT': env('DB_PORT'),
+            'OPTIONS': {
+                'autocommit': True,
+                'charset': 'utf8mb4'
+            }
+        }
+    }
 
 
 # Application definition
@@ -46,9 +101,12 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'core.apps.CoreConfig',
     'rest_framework',
+    'corsheaders',
+    'rest_framework_simplejwt'
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware', # 맨 위에 배치
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -67,8 +125,29 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         # GET 제외 자격 인증 ( 로그인 시 ) | IsAuthenticated : 모두
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        # JWT Token 사용
+        'rest_framework_simplejwt.authentication.JWTAuthentication'
     ]
 }
+
+# JWT 설정
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': False,
+    'TOKEN_USER_CLASS': 'core.Users'
+}
+
+# 기본 Argon2PasswordHasher 사용
+PASSWORD_HASHERS = [
+    "django.contrib.auth.hashers.Argon2PasswordHasher",
+    "django.contrib.auth.hashers.PBKDF2PasswordHasher",
+    "django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher",
+    "django.contrib.auth.hashers.BCryptSHA256PasswordHasher",
+    "django.contrib.auth.hashers.ScryptPasswordHasher",
+]
 
 TEMPLATES = [
     {
@@ -92,12 +171,12 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
 
 
 # Password validation
@@ -137,6 +216,7 @@ USE_TZ = False
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static') # 배포 시 static 위치
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field

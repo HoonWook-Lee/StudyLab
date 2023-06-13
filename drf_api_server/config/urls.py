@@ -21,6 +21,16 @@ from django.conf.urls import include
 # View 함수
 from core.views import *
 
+# static 파일
+from django.urls import re_path as url
+from django.views.static import serve
+from django.conf import settings
+
+# Token
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView, TokenRefreshView, TokenVerifyView
+)
+
 # rest_framework
 from rest_framework import routers
 from core.keyword.apis import KeywordViewSet
@@ -38,4 +48,12 @@ urlpatterns = [
 
     # rest_framework
     path('apis/', include(router.urls)),
+
+    # Token 발급 API
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
+
+    # Uvicorn 에서 static 파일 불러오기 (UI 미사용 시 제거 가능)
+    url(r'^static/(?P<path>.*)$', serve, {'document_root' : settings.STATIC_ROOT}),
 ]

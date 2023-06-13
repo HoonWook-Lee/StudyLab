@@ -6,6 +6,8 @@ from django.contrib.auth.models import AbstractUser
 class Users(AbstractUser):
     # 문자열 최대 50자
     hint = models.CharField(max_length=50)
+    token = models.CharField(max_length=400, blank=True, null=True) # Token
+    token_created_at = models.DateTimeField(null=True) # Token 저장 시간
 
 # 작성, 수정 시간을 상속
 class TimeStampedModel(models.Model):

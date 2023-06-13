@@ -3,7 +3,11 @@ from re import match as re_match
 from argon2 import PasswordHasher, exceptions
 from django.contrib.auth import login, logout
 from random import randrange
+import requests
+from datetime import datetime, timedelta
 from core.models import Users
+from config.settings import DRF_DOMAIN
+
 
 
 # 회원가입 Form
@@ -89,9 +93,28 @@ class LoginForm(forms.Form):
                 pass
             else:
                 # 성공
-                login(request, user)
+                try:
+                    login(request, user)
 
-                res = ('로그인에 성공하였습니다.', 'success', 200)
+                    now = datetime.now() # 현재
+                    end_session = (      # 1주 만료 or 첫 로그인
+                        lambda create : now if create is None else create + timedelta(weeks=1)
+                    )(user.token_created_at)
+                    
+                    # DB 저장 토큰이 없거나 만료 시 토큰 생성
+                    if user.token is None or now >= end_session:
+                        token = requests.post(
+                            f'{DRF_DOMAIN}/api/token/',
+                            json = {'username' : user_id, 'password' : data.get('password')}
+                        ).json()
+
+                        user.token = token['refresh']
+                        user.token_created_at = now
+                        user.save()
+
+                    res = ('로그인에 성공하였습니다.', 'success', 200)
+                except:
+                    res = ('잠시 후 다시 시도하여 주세요!', 'error', 500)
 
         return res
 
@@ -160,6 +183,8 @@ class ChangeForm(forms.Form):
             user.password = 'argon2' + PasswordHasher().hash(pw)
             user.save()
 
+            # 로그 아웃 시 모든 세션 제거
+            request.session.clear()
             logout(request)
             
             res = ('비밀번호 변경이 완료되었습니다.', 'success',  200)
