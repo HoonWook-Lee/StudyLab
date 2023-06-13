@@ -14,4 +14,7 @@ urlpatterns = [
 
     # 아이디 중복 확인
     path('check', user_check, name='user_check'),
+
+    # 비밀번호 초기화
+    path('reset', pw_reset, name='pw_reset'),
 ]

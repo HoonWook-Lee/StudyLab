@@ -1,0 +1,94 @@
+{% extends "user/layout.html" %}
+
+{% load static %}
+
+{% block content %}
+<!-- Content -->
+<div id="vue_div" class="container-xxl">
+    <div class="authentication-wrapper authentication-basic container-p-y">
+        <div class="authentication-inner">
+            <!-- Register -->
+            <div class="card">
+                <div class="card-body">
+                    <!-- Logo -->
+                    <div class="app-brand justify-content-center">
+                        <a href="{% url 'index'%}" class="app-brand-link gap-2">
+                            <span class="app-brand-logo demo">
+                                <img src="{% static 'assets/main.png' %}" alt="" width="130px" height="70px">
+                            </span>
+                            <span class="app-brand-text demo text-body fw-bolder">블로그</span>
+                        </a>
+                    </div>
+                    <!-- /Logo -->
+                    <h4 class="mb-2">🔒 비밀번호 초기화 </h4>
+
+                    <p style="margin-top:20px;color:red;" class="mb-4">
+                        초기화 비밀번호는 무작위 4자리입니다. <br/>
+                        비밀번호 초기화 시 비밀번호를 반드시 변경하여 주세요.
+                    </p>
+
+                    <form id="ResetForm" class="mb-3" onsubmit="return false">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="user_id" class="form-label">아이디</label>
+                            {{ form.user_id }}
+                        </div>
+                        <div class="mb-3 form-password-toggle">
+                            <label for="hint" class="form-label">가장 기억에 남는 한마디</label>
+                            {{ form.hint }}
+                        </div>
+                        <div class="mb-3">
+                            <button @click="resetPw()" class="btn btn-primary d-grid w-100">비밀번호 초기화</button>
+                        </div>
+                    </form>
+                    <div class="text-center">
+                        <a href="{% url 'login' %}" class="d-flex align-items-center justify-content-center">
+                            로그인 하러가기
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+            <!-- /Register -->
+        </div>
+    </div>
+</div>
+<!-- / Content -->
+
+<div class="buy-now">
+    <a href="{% url 'index'%}" class="btn btn-danger btn-buy-now">대시보드</a>
+</div>
+{% endblock %}
+
+{% block script %}
+    <script src="{% static 'js/common.js' %}"></script>
+    <script type="text/javascript">
+
+        var csrftoken = getCookie('csrftoken');
+
+        let vm = new Vue({
+            delimiters: ['[[', ']]'],
+            el: '#vue_div',
+            methods: {
+                resetPw: function () {
+                    axios.post(
+                        `/user/reset`, document.querySelector('#ResetForm'), {
+                            headers : {
+                                'Content-Type' : 'multipart/form-data',
+                                'X-CSRFToken': csrftoken
+                            }
+                        }
+                    ).then(function (response) {
+                        Swal.fire(response.data.msg, '', response.data.check)
+                        setTimeout("location.href='/user/login'", 4000)
+                    }).catch(function (e) {
+                        console.log(e.response.data.msg)
+                        Swal.fire(e.response.data.msg, '', e.response.data.check)
+                    }).finally(function () {
+
+                    });
+                }
+            }
+        });
+    </script>
+{% endblock %}

@@ -2,6 +2,7 @@ from django import forms
 from re import match as re_match
 from argon2 import PasswordHasher, exceptions
 from django.contrib.auth import login
+from random import randrange
 from core.models import Users
 
 
@@ -91,5 +92,37 @@ class LoginForm(forms.Form):
                 login(request, user)
 
                 res = ('로그인에 성공하였습니다.', 'success', 200)
+
+        return res
+
+# 초기화 Form
+class ResetForm(forms.Form):
+    user_id = forms.CharField(max_length=100, required=True, widget=forms.TextInput(attrs={
+        'id' : 'user_id', 'class' : 'form-control', 'placeholder' : '아이디를 입력해주세요', 'autofocus' : 'autofocus'
+    }))
+
+    hint = forms.CharField(max_length=100, required=True, widget=forms.TextInput(attrs={
+        'id' : 'hint', 'class' : 'form-control', 'placeholder' : '가장 기억에 남는 한마디를 남겨주세요 (꼭 기억해주세요)'
+    }))
+
+    # 초기화
+    def reset(self, data):
+        # 무작위 4자리 숫자
+        random_number = randrange(1000, 10000)
+
+        res = ('정보가 일치하지 않습니다.', 'error', 422)
+
+        try:
+            # 등록 정보 확인
+            user = Users.objects.get(username=data.get('user_id'))
+        except Users.DoesNotExist:
+            pass
+        else:
+            # 비밀번호 힌트 일치 시 비밀번호 초기화
+            if user.hint == data.get('hint'):
+                user.password = 'argon2' + PasswordHasher().hash(str(random_number))
+                user.save()
+
+                res = (f'변경된 비밀번호는 {random_number}입니다. \n 로그인 후 비밀번호를 변경하여 주세요.', 'success', 200)
 
         return res

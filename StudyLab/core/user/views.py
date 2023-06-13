@@ -52,3 +52,19 @@ def user_check(request):
     res = user_check_func(user_id)
 
     return JsonResponse(data=dict(msg=res[0], check=res[1]), status=res[2], safe=False)
+
+# 비밀번호 초기화
+def pw_reset(request):
+
+    # POST 요청 확인
+    if request.method == 'POST':
+        form = ResetForm(request.POST)
+        res = (
+            lambda x : x.reset(x.cleaned_data) if x.is_valid() else ('올바르지 않은 데이터 입니다.', 'error', 422)
+        )(form)
+
+        return JsonResponse(data=dict(msg=res[0], check=res[1]), status=res[2], safe=False)
+    else:
+        form = ResetForm()
+
+        return render(request, 'user/reset.html', {'form' : form})
