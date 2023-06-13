@@ -1,0 +1,59 @@
+version: '3'
+
+services:
+    # nginx 설정
+    hw-nginx: 
+        container_name: hw-nginx
+        image: nginx:latest
+        volumes:
+            - ./nginx_settings/default.conf:/etc/nginx/conf.d/default.conf
+            - ./StudyLab/:/var/www/studylab
+        ports:
+            - '80:80'
+        depends_on:
+            - hw-web
+        networks:
+            - hwnet
+        restart: always
+
+    # StudyLab 설정
+    hw-web:
+        user: python
+        container_name: hw-web
+        image: hw-web
+        build: ./StudyLab/
+        volumes:
+            - ./StudyLab/:/var/www/studylab
+            - hwvolume:/var/lib/mysql
+        depends_on:
+            - hw-db
+        networks:
+            - hwnet
+        restart: always
+        
+        command: ['sh', './docker_settings/studylab.sh']
+
+    # MySQL 설정
+    hw-db:
+        container_name: hw-db
+        image: mysql:8.0
+        volumes:
+            - hwvolume:/var/lib/mysql
+        environment:
+            MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+            MYSQL_DATABASE: ${DB_NAME}
+        ports:
+            - 3306:3306
+        networks:
+            - hwnet
+        restart: always
+
+        command:
+            - --character-set-server=utf8
+            - --collation-server=utf8_unicode_ci
+
+networks:
+    hwnet:
+
+volumes:
+    hwvolume:

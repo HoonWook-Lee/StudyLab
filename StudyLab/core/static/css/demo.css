@@ -127,3 +127,9 @@ select::-ms-expand {
   color: #fff;
   padding: 3px 0;
 }
+
+/* My CSS */
+.misc-wrapper {
+  text-align: center;
+  margin-top: 10%;
+}

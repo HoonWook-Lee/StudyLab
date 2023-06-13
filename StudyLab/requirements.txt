@@ -4,5 +4,7 @@ asgiref==3.7.2
 cffi==1.15.1
 Django==4.2.2
 django-environ==0.10.0
+gunicorn==20.1.0
+mysqlclient==2.1.1
 pycparser==2.21
 sqlparse==0.4.4
