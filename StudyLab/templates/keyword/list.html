@@ -1,0 +1,191 @@
+{% extends "layout.html" %}
+
+{% load static %}
+
+{% block content %}
+<!-- Content -->
+
+<div id="vue_div" class="container-xxl flex-grow-1 container-p-y">
+    <h4 class="fw-bold py-3 mb-4">📌 우리의 키워드 모음집</h4>
+    <div class="row mb-5">
+        <!-- Contextual Classes -->
+        <div class="card">
+            <br/>
+            <div class="table-responsive text-nowrap">
+                <table v-if="[[error]] == ''" class="table">
+                    <thead>
+                        <tr>
+                            <th style="font-size:20px"><strong>키워드</strong></th>
+                            <th style="font-size:20px"><strong>작성된 메모 갯수</strong></th>
+                            <th style="font-size:20px"><strong>등록일</strong></th>
+                            <th style="font-size:20px"><strong>삭제</strong></th>
+                        </tr>
+                    </thead>
+                    <tbody v-if="[[keywords ? keywords.results:'']] != ''" class="table-border-bottom-0">
+                        <tr v-for="(k, key) in keywords.results" :class="{'table-success' : key % 2 == 0}">
+                            <td>
+                                <strong>[[k.keyword]]</strong>
+                            </td>
+                            <td>
+                                &emsp;&emsp;
+                                <span v-if="[[k.count]] == ''" class="badge bg-label-info me-1">
+                                    &nbsp;0 개&nbsp;
+                                </span>
+                                <span v-else="" class="badge bg-label-info me-1">
+                                    &nbsp;[[k.count]] 개&nbsp;
+                                </span>
+                            </td>
+                            <td>[[k.created_at.substr(0, 4)]]년 [[k.created_at.substr(5, 2)]]월 [[k.created_at.substr(8, 2)]]일</td>
+                            <td>
+                                <div class="dropdown">
+                                    <button @click="deleteKeyword([[k.id]])" style="cursor:pointer;color:red;" type="button" class="btn p-0 dropdown-toggle hide-arrow">
+                                        <i class="fa-solid fa-ban"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                    <tbody v-else="" class="table-border-bottom-0">
+                        <tr class="table-default">
+                            <td colspan="4" style = "color : red; text-align : center; padding-top : 30px;">
+                                ❗️ <strong> 작성된 키워드가 새로운 키워드를 생성하여 주세요. </strong>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table v-else="" class="table">
+                    <thead>
+                        <tr>
+                            <th style="font-size:20px"><strong>키워드</strong></th>
+                            <th style="font-size:20px"><strong>작성된 메모 갯수</strong></th>
+                            <th style="font-size:20px"><strong>등록일</strong></th>
+                            <th style="font-size:20px"><strong>삭제</strong></th>
+                        </tr>
+                    </thead>
+                    <tbody class="table-border-bottom-0">
+                        <tr class="table-default">
+                            <td colspan="4" style = "color : red; text-align : center; padding-top : 30px;">
+                                ❗️ <strong>[[error]]</strong>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <br/><br/><br/>
+            </div>
+        </div>
+        <!--/ Contextual Classes -->
+
+        <div class="demo-inline-spacing">
+            <!-- Basic Pagination -->
+            <nav style="display:flex;justify-content : center;" aria-label="Page navigation">
+                <ul class="pagination">
+                    
+                    <li v-if="[[keywords ? keywords.previous:'']] != ''" class="page-item first">
+                        <a class="page-link" href="?p=1">
+                            <i class="tf-icon fa-solid fa-angles-left"></i>                                
+                        </a>
+                    </li>
+
+                    <li v-if="[[keywords ? keywords.previous:'']] != ''" class="page-item prev">
+                        <a class="page-link" :href=`?p=${pages-1}`>
+                            <i class="tf-icon fa-solid fa-angle-left"></i>                                
+                        </a>
+                    </li>
+                    <li v-else="" class="page-item">
+                        <a class="page-link">❌</a>
+                    </li>
+                    
+                    <li class="page-item active">
+                        <a class="page-link">{{page}} / [[count]]</a>
+                    </li>
+                    
+                    <li v-if="[[keywords ? keywords.next:'']] != ''" class="page-item next">
+                        <a class="page-link" :href=`?p=${pages+1}`>
+                            <i class="tf-icon fa-solid fa-angle-right"></i>                                
+                        </a>
+                    </li>
+                    
+                    <li v-if="[[keywords ? keywords.next:'']] != ''" class="page-item last">
+                        <a class="page-link" :href=`?p=${count}`>
+                            <i class="tf-icon fa-solid fa-angles-right"></i>                                
+                        </a>
+                    </li>                
+                    <li v-else="" class="page-item">
+                        <a class="page-link">❌</a>
+                    </li>
+              </ul>
+            </nav>
+            <!--/ Basic Pagination -->
+        </div>
+    </div>
+    <!--/ Images -->
+</div>
+<!-- / Content -->
+{% endblock %}
+
+{% block link %}
+<div class="buy-now">
+    <a href="{% url 'k-write'%}"class="btn btn-danger btn-buy-now">키워드 생성하러 가기</a>
+</div>
+{% endblock %}
+
+{% block script %}
+<script type="text/javascript">
+    let vm = new Vue({
+        delimiters: ['[[', ']]'],
+        el: '#vue_div',
+        data: {
+            keywords : null,
+            count : 0,
+            pages : {{page}},
+            error : null
+        },
+        mounted() {
+            this.getKeyword();
+        },
+        methods: {
+            getKeyword: function () {
+                $("#vue_div").LoadingOverlay("show");
+
+                axios.get(`${drf_domain}/apis/keywords/?page={{page}}`,
+                ).then(function (response) {
+                    vm.keywords = response.data;
+                    vm.count = Math.ceil(response.data.count / 9)
+                }).catch(function (e) {
+                    vm.error = '현재 키워드를 찾을 수 없습니다. 잠시 후 다시 이용해주세요.'
+                }).finally(function () {
+                    $("#vue_div").LoadingOverlay("hide");
+                });
+            },
+            deleteKeyword: function (id) {
+                Swal.fire({
+                    title: '정말로 삭제하실건가요?',
+                    showDenyButton: true,
+                    showCancelButton: true,
+                    confirmButtonText: '예',
+                    denyButtonText: `아니요`,
+                }).then((result) =>{
+                    if (result.isConfirmed) {
+                        axios.delete(
+                            `${drf_domain}/apis/keywords/${id[0][0]}`, { headers : {'Authorization' : 'Bearer {{token}}'} }
+                        ).then(function (response) {
+                            Swal.fire(response.data.msg, '', 'success')
+                            setTimeout("location.href='/keyword/list'", 1000)
+                        }).catch(function (e) {
+                            if ('{{token}}' == 'None') {
+                                Swal.fire('삭제 권한을 가지고 있지 않습니다.', '', 'error')
+                            }else if (e.response.data.msg == null) {
+                                Swal.fire('현재 키워드를 찾을 수 없습니다. \n 잠시 후 다시 이용해주세요.', '', 'error')
+                            }else{
+                                Swal.fire(e.response.data.msg, '', 'error')
+                            }
+                        });
+                    } else if (result.isDenied) {
+                        Swal.fire('좋은 선택입니다!', '', 'info')
+                    }
+                })
+            },
+        }
+    })
+</script>
+{% endblock %}

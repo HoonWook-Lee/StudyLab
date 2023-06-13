@@ -17,3 +17,17 @@ def keyword_create(request):
     token = check_token(request)
             
     return render(request, 'keyword/create.html', {'form' : form, 'token' : token, 'nav_check' : nav_check})
+
+# 키워드 항목 = 로그인 시 삭제 가능
+def keyword_list(request):
+
+    # sidebar active
+    nav_check = 'sidebar_label'
+
+    # 페이지 구현
+    page = int(request.GET.get('p', 1))
+
+    # Token
+    token = check_token(request)
+
+    return render(request, 'keyword/list.html', {'page' : page, 'token' : token, 'nav_check' : nav_check}) 
