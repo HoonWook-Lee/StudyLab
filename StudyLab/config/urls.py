@@ -29,4 +29,7 @@ urlpatterns = [
 
     # 사용자 관련 화면
     path('user/', include('core.user.urls')),
+
+    # 키워드 관련 화면
+    path('keyword/', include('core.keyword.urls')),
 ]

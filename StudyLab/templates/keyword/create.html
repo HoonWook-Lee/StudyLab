@@ -1,0 +1,135 @@
+{% extends "layout.html" %}
+
+{% load static %}
+
+{% block content %}
+<!-- Content -->
+<div id="vue_div" class="container-xxl flex-grow-1 container-p-y">
+    <h4 class="fw-bold py-3 mb-4">📌 &nbsp; 필요한 키워드를 생성하여 주세요</h4>
+    
+    <div class="row">
+        <!-- Basic -->
+        <!-- Enter 입력 시 submit 제거 -->
+        <form id="KcreateForm" class="col-md-12" name="KcreateForm" onsubmit="return false">
+            {% csrf_token %}
+            <div class="card mb-4">
+                <h5 v-if="[[error]] == ''" class="card-header" style = "color : red; text-align : center">
+                    ❗️ 키워드를 반드시 입력하여 주세요!
+                </h5>
+                <h5 v-else="" class="card-header" style = "color : red; text-align : center">
+                    ❗️ [[error]]
+                </h5>
+                <div class="card-body demo-vertical-spacing demo-only-element">
+                    <div class="divider">
+                        <div class="divider-text">
+                            <i class="fa-solid fa-feather-pointed"></i>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="keyword" class="form-label">키워드</label>
+                        {{form.keyword}}
+                    </div>
+                    <div class="divider">
+                        <div class="divider-text">
+                            현재 생성된 키워드입니다.
+                        </div>
+                    </div>
+                    <div v-if="[[keywords ? keywords.results:'']] == ''" class="mb-3">
+                        <div class="keyword_link" style = "color : red;">
+                            현재 생성된 키워드가 없습니다. 필요한 키워드를 생성하여 주세요
+                        </div>
+                    </div>
+                    <div v-else="" class="mb-3">
+                        <select class="form-select" id="exampleFormControlSelect2" aria-label="Multiple select example" style="height : 500px" multiple>
+                            <option v-for="k in keywords.results" style="text-align:center;margin-top:7px;cursor:pointer;font-size:18px">
+                                [[k.keyword]]
+                            </option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <!-- click Event -->
+    <div v-if="[[error]] == ''" class="buy-now">
+        <a @click="createKeyword()" style="color:white" id="enterclick" class="btn btn-danger btn-buy-now">키워드 등록하기</a>
+    </div>
+    <div v-else="" class="buy-now">
+
+    </div>
+</div>
+  <!-- / Content -->
+{% endblock %}
+
+{% block script %}
+<script type="text/javascript">
+    let vm = new Vue({
+        delimiters: ['[[', ']]'],
+        el: '#vue_div',
+        data: {
+            keywords : null,
+            error : null
+        },
+        mounted() {
+            this.getKeyword();
+        },
+        methods: {
+            getKeyword: function () {
+                $("#vue_div").LoadingOverlay("show");
+                
+                axios.get(`${drf_domain}/apis/keywords/all/`,
+                ).then(function (response) {
+                    vm.keywords = response.data;
+                }).catch(function (e) {
+                    vm.error = '현재 오류 확인 작업 중 입니다. 잠시 후 다시 이용해주세요.'
+                }).finally(function () {
+                    $("#vue_div").LoadingOverlay("hide");
+                });
+            },
+            createKeyword: function () {
+                axios.post(
+                    `${drf_domain}/apis/keywords/`, document.querySelector('#KcreateForm'), {
+                        headers : {
+                            'Content-Type' : 'multipart/form-data',
+                            'Authorization' : 'Bearer {{token}}'
+                        }
+                    }
+                ).then(function (response) {
+                    Swal.fire(response.data.msg, '', 'success')
+                    setTimeout("location.href='/keyword/write'", 1000)
+                }).catch(function (e) {
+                    if (e.response.data.msg == null) {
+                        Swal.fire('현재 오류 확인 작업 중 입니다. \n 잠시 후 다시 이용해주세요.', '', 'error')
+                    }else{
+                        Swal.fire(e.response.data.msg, '', 'error')
+                    }
+                });
+            },
+        }
+    })
+    
+    // Enter 키 허용
+    document.querySelector('#KcreateForm').addEventListener('keydown', function (e) {
+        if (window.event.keyCode == 13) {
+            axios.post(
+                `${drf_domain}/apis/keywords/`, document.querySelector('#KcreateForm'), {
+                    headers : {
+                        'Content-Type' : 'multipart/form-data',
+                        'Authorization' : 'Bearer {{token}}'
+                    }
+                }
+            ).then(function (response) {
+                Swal.fire(response.data.msg, '', 'success')
+                setTimeout("location.href='/keyword/write'", 1000)
+            }).catch(function (e) {
+                if (e.response.data.msg == null) {
+                    Swal.fire('현재 키워드를 찾을 수 없습니다. \n 잠시 후 다시 이용해주세요.', '', 'error')
+                }else{
+                    Swal.fire(e.response.data.msg, '', 'error')
+                }
+            });
+        }
+    });
+
+</script>
+{% endblock %} 
