@@ -13,4 +13,7 @@ urlpatterns = [
 
     # 메모 수정
     path('rewrite', memo_update, name='m-rewrite'),
+
+    # 메모 검색
+    path('find', memo_find, name='m-find')
 ]

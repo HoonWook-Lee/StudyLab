@@ -48,4 +48,21 @@ def memo_update(request):
     # Token
     token = check_token(request)
 
-    return render(request, 'memo/update.html', {'nav_check' : nav_check, 'token' : token}) 
+    return render(request, 'memo/update.html', {'nav_check' : nav_check, 'token' : token})
+
+# 메모 검색
+def memo_find(request):
+
+    # sidebar active
+    nav_check = 'sidebar_memo'
+
+    # 키워드 및 값 받아오기
+    relation = request.GET.get('relation', '내용')
+    key = request.GET.get('key', '')
+
+    # 페이지 구현
+    page = int(request.GET.get('p', 1))
+
+    return render(request, 'memo/find.html', {
+        'nav_check': nav_check, 'key': key, 'relation': relation, 'page' : page
+    })

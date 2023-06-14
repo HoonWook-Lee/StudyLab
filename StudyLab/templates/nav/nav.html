@@ -13,7 +13,7 @@
 
     <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
         <!-- Search -->
-        <form class="navbar-nav align-items-center" action="#">
+        <form id="search" class="navbar-nav align-items-center" action="{% url 'm-find' %}">
             <div class="nav-item d-flex align-items-center">
                 <i class="fa-solid fa-magnifying-glass"></i>
                 <input
@@ -23,6 +23,21 @@
                     aria-label="Search..."
                     name="key"
                 />
+                <select name="relation" class="select">
+                    {% if relation == '제목' %} 
+                        <option value="제목" selected >제목으로 메모 찾기</option>
+                        <option value="키워드">키워드로 메모 찾기</option>
+                        <option value="내용">내용으로 메모 찾기</option>
+                    {% elif relation == '키워드' %}
+                        <option value="제목">제목으로 메모 찾기</option>
+                        <option value="키워드" selected >키워드로 메모 찾기</option>
+                        <option value="내용">내용으로 메모 찾기</option>
+                    {% else %}
+                        <option value="제목">제목으로 메모 찾기</option>
+                        <option value="키워드">키워드로 메모 찾기</option>
+                        <option value="내용" selected >내용으로 메모 찾기</option>
+                    {% endif %}
+                </select>
             </div>
         </form>
         <!-- /Search -->
