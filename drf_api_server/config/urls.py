@@ -34,10 +34,12 @@ from rest_framework_simplejwt.views import (
 # rest_framework
 from rest_framework import routers
 from core.keyword.apis import KeywordViewSet
+from core.memo.apis import MemoViewSet
 
 # router 지정
 router = routers.DefaultRouter()
 router.register(r'keywords', KeywordViewSet)
+router.register(r'memos', MemoViewSet)
 
 
 urlpatterns = [
@@ -54,6 +56,7 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
 
-    # Uvicorn 에서 static 파일 불러오기 (UI 미사용 시 제거 가능)
+    # Uvicorn 에서 static, media 파일 불러오기 (UI 미사용 시 제거 가능, media는 파일 따로 관리 시 제거 가능)
     url(r'^static/(?P<path>.*)$', serve, {'document_root' : settings.STATIC_ROOT}),
+    url(r'^media/(?P<path>.*)$', serve, {'document_root':settings.MEDIA_ROOT}),
 ]

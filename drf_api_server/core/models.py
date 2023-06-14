@@ -38,3 +38,12 @@ class Memos(TimeStampedModel):
     img = models.FileField(upload_to='', blank=True, null=True) 
     # 다대다 관계, Null 허용, 폼 비움 허용
     keywords = models.ManyToManyField('Keywords', related_name='memos', blank=True)
+
+    # 좋아요 기능
+    def clicked(self):
+        self.like += 1
+        self.save()
+
+        msg = '좋은 의견 감사합니다.'
+        
+        return msg
