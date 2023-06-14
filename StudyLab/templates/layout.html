@@ -160,5 +160,12 @@
         <!-- Main JS -->
         <script src="{% static 'js/main.js' %}"></script>
 
+        <!-- Nav Active -->
+        <script type="text/javascript">
+            $(function(){
+                document.getElementById('{{nav_check}}').className = "menu-item active open"
+            });
+        </script>
+
     </body>
 </html>
