@@ -37,3 +37,15 @@ def memo_view(request):
     nav_check = 'sidebar_memo'
 
     return render(request, 'memo/retrieve.html', {'nav_check' : nav_check})
+
+# 메모 수정 = 로그인 시 페이지 접근 가능
+@login_required
+def memo_update(request):
+
+    # sidebar active
+    nav_check = 'sidebar_memo'
+
+    # Token
+    token = check_token(request)
+
+    return render(request, 'memo/update.html', {'nav_check' : nav_check, 'token' : token}) 

@@ -51,7 +51,7 @@ class MemoViewSet(viewsets.ModelViewSet):
         else:
             rtn, sta = (
                 lambda writer, user, super : ('삭제가 완료되었습니다.', status.HTTP_200_OK) if writer == user or super
-                    else ('삭제 권한을 가지고 있지 않습니다.', status.HTTP_403_FORBIDDEN)
+                    else ('삭제할 수 없는 메모입니다.', status.HTTP_403_FORBIDDEN)
             )(d_queryset[0].writer, request.user, request.user.is_superuser)
 
         if rtn == '삭제가 완료되었습니다.':

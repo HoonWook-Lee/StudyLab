@@ -70,6 +70,6 @@ class MemoSerializer(serializers.ModelSerializer):
                 instance.keywords.clear() # 기존 삭제
                 list(map(lambda x : instance.keywords.add(Keywords.objects.get(pk=x)), keywords))
         else:
-            res = '삭제 권한을 가지고 있지 않습니다.', status.HTTP_403_FORBIDDEN
+            res = '수정할 수 없는 메모입니다.', status.HTTP_403_FORBIDDEN
 
         return res

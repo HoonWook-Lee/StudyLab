@@ -121,7 +121,7 @@
                     }
                 ).then(function (response) {
                     Swal.fire('메모 작성이 완료되었습니다.', '', 'success')
-                    setTimeout("location.href='/memo/write'", 1000)
+                    setTimeout(`location.href='/memo/view?id=${response.data.id}'`, 1000)
                 }).catch(function (e) {
                     if (e.response.data.msg == null) {
                         Swal.fire('현재 오류 확인 작업 중 입니다. \n 잠시 후 다시 이용해주세요.', '', 'error')

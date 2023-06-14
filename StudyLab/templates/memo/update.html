@@ -1,0 +1,214 @@
+{% extends "layout.html" %}
+
+{% load static %}
+
+{% block content %}
+<!-- Content -->
+<div id = "vue_div" class="container-xxl flex-grow-1 container-p-y">
+    <h4 class="fw-bold py-3 mb-4">
+        ✏️ &nbsp; 메모를 수정하여 주세요
+    </h4>
+    <h5 v-if="[[error]] == ''"></h5>
+    <h5 v-else="" class="card-header" style = "color : red; text-align : center">
+        ❗️ [[error]]
+    </h5>
+    <h5 v-if="[[memos ? memos.keywords:'']] == ''" class="pb-1 mb-4">
+        <span class="text-muted fw-light">키워드 /</span>
+        작성된 키워드가 없습니다.
+    </h5>
+    <h5 v-else="" class="pb-1 mb-4" >
+        <span class="text-muted fw-light">키워드 /</span>
+        <div v-for="m in memos ? memos.keywords:'없음'" style="display:inline-block; color : green;">
+            # [[m]] &nbsp;
+        </div>
+    </h5>
+    <div class="row">
+        <!-- Basic -->
+        <form id="MupdateForm" class="col-md-12" name="MupdateForm" onsubmit="return false">
+            {% csrf_token %}
+            <div class="card mb-4">
+                <div class="card-body demo-vertical-spacing demo-only-element">
+                    <div class="input-group">
+                        <span class="input-group-text" id="basic-addon11">📌</span>
+                        <input v-if="[[memos ? memos.writer:'']] == ''" type="text" 
+                            class="form-control" value="알 수 없는 유저" readonly="readonly"
+                        />
+                        <input v-else="" type="text" class="form-control"
+                            :value="[[memos.writer ? memos.writer.username:'']]" readonly="readonly"
+                        />
+                    </div>  
+                    <div class="divider">
+                        <div class="divider-text">
+                            <i class="fa-solid fa-feather-pointed"></i>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-text" id="basic-addon11">제목</span>
+                        <input v-if="[[memos ? memos.title:'']] == ''" type="text" 
+                            class="form-control" value="알 수 없는 메모" style= 'height:60px;font-size:18px'
+                        />
+                        <input v-else="" type="text" class="form-control" name="title"
+                            :value="[[memos ? memos.title:'']]" style= 'height:60px;font-size:18px'
+                        />
+                    </div>
+                    <div class="divider">
+                        <div class="divider-text">
+                            Text
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-text">메인 내용</span>
+                        <textarea v-if="[[memos ? memos.title:'']] == ''" rows="15" 
+                            class="form-control" aria-label="With textarea">알 수 없는 메모</textarea>
+                        <textarea v-else="" rows="15" 
+                            name="content" class="form-control" aria-label="With textarea">[[memos ? memos.content:'']]</textarea>
+                    </div>
+                    <br/>
+                    <div class="divider">
+                        <div class="divider-text">
+                            변경을 원하시면 새로운 이미지 및 키워드를 추가하여 주세요 (다중 선택 - ctrl / command + click)
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <input name="img" class="form-control" type="file" id="formFile" />
+                    </div>       
+                    <div v-if="[[keywords ? keywords.results:'']] == ''" class="mb-3">
+                        <div class="keyword_link" style = "color : red;">
+                            현재 생성된 키워드가 없습니다. 필요한 키워드를 생성하여 주세요
+                        </div>
+                    </div>
+                    <div v-else="" class="mb-3">
+                        <select class="form-select" id="exampleFormControlSelect2" aria-label="Multiple select example" name="keywords" style="height : 300px" multiple>
+                            <option v-for="k in keywords.results" style="text-align:center;margin-top:7px;cursor:pointer;font-size:18px" :value=`${k.id}`>
+                                [[k.keyword]]
+                            </option>
+                        </select>
+                    </div>
+                    <br/><br/><br/><br/>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div v-if="[[error]] == ''" class="buy-now">
+        <a @click="updateMemo([[memoId]])" class="btn btn-danger btn-buy-now" style="color:white; margin-right:120px">
+            메모 수정
+        </a>
+    </div>
+    <div v-else="" class="buy-now">
+    </div>
+    <div v-if="[[error]] == ''" class="buy-now">
+        <a @click="deleteMemo([[memoId]])" style="color:white;" class="btn btn-danger btn-buy-now">
+            메모 삭제
+        </a>
+    </div>
+    <div v-else="" class="buy-now">
+    </div>
+
+
+</div>
+  <!-- / Content -->
+{% endblock %}
+
+{% block link %}
+
+
+
+{% endblock %}
+
+{% block script %}
+<script type="text/javascript">
+    let vm = new Vue({
+        delimiters: ['[[', ']]'],
+        el: '#vue_div',
+        data: {
+            keywords : null,
+            memos: null,
+            error : null,
+            memoId : null
+        },
+        mounted() {
+            this.getMemo();
+            this.getKeyword();
+        },
+        methods: {
+            getKeyword: function () {
+                $("#vue_div").LoadingOverlay("show");
+                
+                axios.get(`${drf_domain}/apis/keywords/all/`,
+                ).then(function (response) {
+                    vm.keywords = response.data;
+                }).catch(function (e) {
+                    vm.error = '현재 오류 확인 작업 중 입니다. 잠시 후 다시 이용해주세요.'
+                }).finally(function () {
+                    $("#vue_div").LoadingOverlay("hide");
+                });
+            },
+            getMemo: function () {
+                $("#vue_div").LoadingOverlay("show");
+
+                axios.get(`${drf_domain}/apis/memos/${sessionStorage.getItem('memoId')}/`,
+                ).then(function (response) {
+                    vm.memos = response.data;
+                    vm.memoId = `${sessionStorage.getItem('memoId')}`;
+                }).catch(function (e) {
+                    vm.error = '해당 메모를 찾을 수 없습니다. 잠시 후 다시 이용해주세요.'
+                }).finally(function () {
+                    $("#vue_div").LoadingOverlay("hide");
+                });
+                
+            },
+            updateMemo: function (id) {
+                axios.put(
+                    `${drf_domain}/apis/memos/${id[0][0]}/`, document.querySelector('#MupdateForm'), {
+                        headers : {
+                            'Content-Type' : 'multipart/form-data',
+                            'Authorization' : 'Bearer {{token}}'
+                        }
+                    }
+                ).then(function (response) {
+                    Swal.fire(response.data.msg, '', 'success')
+                    setTimeout("location.href='/memo/view'", 1000)
+                }).catch(function (e) {
+                    if (e.response.data.msg == null) {
+                        Swal.fire('현재 오류 확인 작업 중 입니다. \n 잠시 후 다시 이용해주세요.', '', 'error')
+                    }else{
+                        Swal.fire(e.response.data.msg, '', 'error')
+                    }
+                });
+            },
+            deleteMemo: function (id) {
+                Swal.fire({
+                    title: '정말로 삭제하실건가요?',
+                    showDenyButton: true,
+                    showCancelButton: true,
+                    confirmButtonText: '예',
+                    denyButtonText: `아니요`,
+                }).then((result) =>{
+                    if (result.isConfirmed) {
+                        axios.delete(
+                            `${drf_domain}/apis/memos/${id[0][0]}/`, { headers : {'Authorization' : 'Bearer {{token}}'} }
+                        ).then(function (response) {
+                            Swal.fire(response.data.msg, '', 'success')
+                            setTimeout("location.href='/memo/list'", 1000)
+                        }).catch(function (e) {
+                            if ('{{token}}' == 'None') {
+                                Swal.fire('삭제 권한을 가지고 있지 않습니다.', '', 'error')
+                            }else if (e.response.data.msg == null) {
+                                Swal.fire('현재 키워드를 찾을 수 없습니다. \n 잠시 후 다시 이용해주세요.', '', 'error')
+                            }else{
+                                Swal.fire(e.response.data.msg, '', 'error')
+                            }
+                        });
+                    } else if (result.isDenied) {
+                        Swal.fire('좋은 선택입니다!', '', 'info')
+                    }
+                })
+            }
+        }
+    })
+    $(function(){
+        history.replaceState({}, null, location.pathname);
+    });
+</script>
+{% endblock %} 
