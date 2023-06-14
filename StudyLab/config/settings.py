@@ -56,6 +56,9 @@ else:
     DEBUG = False
     ALLOWED_HOSTS = eval(env('DEPLOY_ALLOWED_HOSTS'))
 
+    # 배포 시 CSRF 추가
+    CSRF_TRUSTED_ORIGINS = eval(env('CSRF_DEPLOY_WHITELIST'))
+
     # MySQL 설정
     DATABASES = {
         'default': {
