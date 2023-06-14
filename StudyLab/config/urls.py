@@ -32,4 +32,7 @@ urlpatterns = [
 
     # 키워드 관련 화면
     path('keyword/', include('core.keyword.urls')),
+
+    # 메모 관련 화면
+    path('memo/', include('core.memo.urls')),
 ]

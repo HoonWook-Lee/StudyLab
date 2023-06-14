@@ -1,0 +1,138 @@
+{% extends "layout.html" %}
+
+{% load static %}
+
+{% block content %}
+<!-- Content -->
+<div id="vue_div" class="container-xxl flex-grow-1 container-p-y">
+    <h4 class="fw-bold py-3 mb-4">✏️ &nbsp; 자신의 메모를 기록하여 주세요</h4>
+
+    <div class="row">
+        <!-- Basic -->
+        <form id="McreateForm" class="col-md-12" name="McreateForm" onsubmit="return false">
+            {% csrf_token %}
+            <div class="card mb-4">
+                <h5 v-if="[[error]] == ''" class="card-header" style = "color : red; text-align : center">
+                    ❗️ 제목과 내용은 반드시 입력하여 주세요!
+                </h5>
+                <h5 v-else="" class="card-header" style = "color : red; text-align : center">
+                    ❗️ [[error]]
+                </h5>
+                <div class="card-body demo-vertical-spacing demo-only-element">
+                    <div class="divider">
+                        <div class="divider-text">
+                            작성자
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <input id="writer" name="writer" class="form-control" value="{{user}}" readonly="readonly" style="text-align : center"/>
+                    </div>
+
+                    <div class="divider">
+                        <div class="divider-text">
+                            <i class="fa-solid fa-feather-pointed"></i>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="title" class="form-label">제목</label>
+                        {{form.title}}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="content" class="form-label">메모 내용</label>
+                        {{form.content}}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="img" class="form-label">메인 이미지</label>
+                        {{form.img}}
+                    </div>
+
+                    <div class="divider">
+                        <div class="divider-text">
+                            키워드를 선택하여 주세요 (다중 선택 - ctrl / command + click)
+                        </div>
+                    </div>
+
+                    <div v-if="[[keywords ? keywords.results:'']] == ''" class="mb-3">
+                        <div class="keyword_link" style="text-align:center;font-size:30px">
+                            <a id="keyword" href="{% url 'k-write' %}">
+                                현재 생성된 키워드가 없습니다. 필요한 키워드 등록하러 가기
+                            </a>         
+                        </div>
+                    </div>
+                    <div v-else="" class="mb-3">
+                        <select class="form-select" id="exampleFormControlSelect2" aria-label="Multiple select example" name="keywords" style="height : 400px" multiple>
+                            <option v-for="k in keywords.results" style="text-align:center;margin-top:7px;cursor:pointer;font-size:18px" :value=`${k.id}`>
+                                [[k.keyword]]
+                            </option>
+                        </select>
+                    </div>
+                    <br/><br/><br/><br/>
+                </div>
+            </div>
+        </form>
+    </div>
+    <!-- click Event -->
+    <div v-if="[[error]] == ''" class="buy-now">
+        <a @click="createMemo()" style="color:white" id="enterclick" class="btn btn-danger btn-buy-now">메모 등록하기</a>
+    </div>
+    <div v-else="" class="buy-now">
+
+    </div>
+</div>
+  <!-- / Content -->
+{% endblock %}
+
+{% block script %}
+<script type="text/javascript">
+    let vm = new Vue({
+        delimiters: ['[[', ']]'],
+        el: '#vue_div',
+        data: {
+            keywords : null,
+            error : null
+        },
+        mounted() {
+            this.getKeyword();
+        },
+        methods: {
+            getKeyword: function () {
+                $("#vue_div").LoadingOverlay("show");
+
+                axios.get(`${drf_domain}/apis/keywords/all/`,
+                ).then(function (response) {
+                    vm.keywords = response.data;
+                }).catch(function (e) {
+                    vm.error = '현재 오류 확인 작업 중 입니다. 잠시 후 다시 이용해주세요.'
+                }).finally(function () {
+                    $("#vue_div").LoadingOverlay("hide");
+                });
+            },
+            createMemo: function () {
+                axios.post(
+                    `${drf_domain}/apis/memos/`, document.querySelector('#McreateForm'), {
+                        headers : {
+                            'Content-Type' : 'multipart/form-data',
+                            'Authorization' : 'Bearer {{token}}'
+                        }
+                    }
+                ).then(function (response) {
+                    Swal.fire('메모 작성이 완료되었습니다.', '', 'success')
+                    setTimeout("location.href='/memo/write'", 1000)
+                }).catch(function (e) {
+                    if (e.response.data.msg == null) {
+                        Swal.fire('현재 오류 확인 작업 중 입니다. \n 잠시 후 다시 이용해주세요.', '', 'error')
+                    }else{
+                        Swal.fire(e.response.data.msg, '', 'error')
+                    }
+                });
+            },
+        }
+    });
+
+
+</script>
+{% endblock %} 
