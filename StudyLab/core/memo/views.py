@@ -18,3 +18,22 @@ def memo_create(request):
     token = check_token(request)
 
     return render(request, 'memo/create.html', {'nav_check' : nav_check, 'form' : form, 'token' : token})
+
+# 메모 리스트 보기
+def memo_list(request):
+
+    # sidebar active
+    nav_check = 'sidebar_memo'
+
+    # 페이지 구현
+    page = int(request.GET.get('p', 1))
+
+    return render(request, 'memo/list.html', {'nav_check' : nav_check, 'page' : page})
+
+# 메모 상세보기
+def memo_view(request):
+
+    # sidebar active
+    nav_check = 'sidebar_memo'
+
+    return render(request, 'memo/retrieve.html', {'nav_check' : nav_check})

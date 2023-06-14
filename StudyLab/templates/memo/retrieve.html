@@ -1,0 +1,147 @@
+{% extends "layout.html" %}
+
+{% load static %}
+
+{% block content %}
+<!-- Content -->
+
+<div id = "vue_div" class="container-xxl flex-grow-1 container-p-y">
+    <h4 v-if="[[memos]] == ''" class="fw-bold py-3 mb-4">
+        <span class="text-muted fw-light">작성자 /</span> 
+        정보를 불러 올 수 없습니다.
+    </h4>
+    <h4 v-else="" class="fw-bold py-3 mb-4">
+        <span class="text-muted fw-light">작성자 /</span> 
+        [[memos.writer.username]]
+    </h4>
+    <!-- Horizontal -->
+    <h5 v-if="[[memos ? memos.keywords:'']] == ''" class="pb-1 mb-4">
+        <span class="text-muted fw-light">키워드 /</span>
+        등록된 키워드 정보가 없습니다.
+    </h5>
+    <h5 v-else="" class="pb-1 mb-4" >
+        <span class="text-muted fw-light">키워드 /</span>
+        <div v-for="m in memos ? memos.keywords:'없음'" style="display:inline-block; color : green;">
+            # [[m]] &nbsp;
+        </div>
+    </h5>
+
+    <div class="row">
+        <div class="col-lg-12 mb-4 order-0">
+            <div class="card mb-3">
+                <div class="row g-0">
+                    <div class="col-md-12">
+                        <div class="card-body">
+                            <h3 v-if="[[memos ? memos.title:'']] == ''" style="text-align:center" class="card-title">
+                                올바르지 않은 경로
+                            </h3>
+                            <h3 v-else="" style="text-align:center" class="card-title">
+                                [[memos ? memos.title:'']]
+                            </h3>
+                            <div class="divider">
+                                <div class="divider-text">
+                                    Text
+                                </div>
+                            </div>
+                            <br/><br/>
+                            <p v-if="[[memos ? memos.content:'']] == ''" class="card-text"
+                                style="font-size:22px; text-align:center; color : red">
+                                올바르지 않은 경로 입니다.<br/>
+                                다시 확인 후 이용하여 주세요!
+                            </p>
+                            <pre v-else="" style="font-size:22px"class="card-text">
+[[memos ? memos.content:'']]
+                            </pre>
+                            <br/><br/>
+                            <div class="divider">
+                                <div class="divider-text">
+                                    <i class="fa-solid fa-feather-pointed"></i>
+                                </div>
+                            </div>
+                            <p v-if="[[memos ? memos.created_at:'']] == ''" class="card-text"></p>
+                            <p v-else="" class="card-text">
+                                등록일 : [[memos ? memos.created_at.substr(0, 10):'']]
+                            </p>
+                            <p v-if="[[memos ? memos.created_at:'']] == ''" class="card-text"></p>
+                            <p v-else="" class="card-text">
+                                ❤️ : [[memos ? memos.like:'']]
+                            </p>
+
+                            <div v-if="[[memos]] == ''" style="text-align : center;">
+                                <a  href="{% url 'm-list' %}"
+                                    style="cursor:pointer; font-size:33px; color:skyblue">
+                                    메모 리스트 이동하기
+                                </a>
+                            </div>
+                            <div v-else="" style="text-align:right">
+                                <a style="cursor:pointer; font-size:33px;">
+                                    ❤️ 좋아요 ❤️
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <form id='frm' action="/memo/rewrite" method="GET">
+            <input type="hidden" name="id" :value=`${memoId}`>
+        </form>        
+    </div>
+    <!--/ Horizontal -->
+</div>
+<!-- / Content -->
+{% endblock %}
+
+{% block link %}
+<div class="buy-now">
+    <a herf='#' class="btn btn-danger btn-buy-now" style="color:white"> 
+        메모 수정하기
+    </a>
+</div>
+
+{% endblock %}
+
+{% block script %}
+<script type="text/javascript">
+    let vm = new Vue({
+        delimiters: ['[[', ']]'],
+        el: '#vue_div',
+        data: {
+            memos: null,
+            error : null,
+            memoId : null
+        },
+        mounted() {
+            this.getMemo();
+        },
+        methods: {
+            getMemo: function () {
+                $("#vue_div").LoadingOverlay("show");
+
+                const urlParams = new URL(location.href).searchParams;
+                var id = urlParams.get('id')
+                var memoId = sessionStorage.getItem('memoId')
+
+                if (memoId == null){
+                    sessionStorage.setItem('memoId', id);
+                }else if (id != null){
+                    sessionStorage.setItem('memoId', id);
+                }
+                
+                axios.get(`${drf_domain}/apis/memos/${sessionStorage.getItem('memoId')}/`,
+                ).then(function (response) {
+                    vm.memos = response.data;
+                    vm.memoId = `${sessionStorage.getItem('memoId')}`;
+                }).catch(function (e) {
+                    vm.error = '해당 메모를 찾을 수 없습니다. 잠시 후 다시 이용해주세요.'
+                }).finally(function () {
+                    $("#vue_div").LoadingOverlay("hide");
+                });
+            }
+        }
+    })
+    $(function(){
+        history.replaceState({}, null, location.pathname);
+    }); 
+</script>
+{% endblock %}
