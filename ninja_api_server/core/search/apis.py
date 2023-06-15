@@ -16,9 +16,11 @@ async def search_book(request, keyword : str, page : int = 1):
     
     # 책 정보 가져오기
     books = await search_book_func(keyword, page)
+
+    max_json = (lambda total : 112 if total > 1000 else ceil(books.json()['total']/9))(books.json()['total'])
     
     res = (lambda bsc : 
-        dict(end_page=ceil(books.json()['total']/9), items=books.json()['items']) if bsc == 200 else books.json()
+        dict(end_page=max_json, items=books.json()['items']) if bsc == 200 else books.json()
     )(books.status_code)
 
     return JsonResponse(res, status=books.status_code, safe=False)

@@ -35,4 +35,7 @@ urlpatterns = [
 
     # 메모 관련 화면
     path('memo/', include('core.memo.urls')),
+
+    # 검색 관련 화면
+    path('search/', include('core.search.urls')),
 ]

@@ -76,6 +76,7 @@
         <!-- Domain -->
         <script>
             var drf_domain = 'http://localhost:5000'
+            var ninja_domain = 'http://localhost:8080'
         </script>
 
         {% block statics %}
@@ -93,7 +94,11 @@
                 <!-- Layout container -->
                 <div class="layout-page">
 
-                    {% include 'nav/nav.html' %}
+                    {% if ns %}
+                        {% include 'nav/search_nav.html' %}
+                    {% else %}
+                        {% include 'nav/nav.html' %}
+                    {% endif %} 
 
                     <!-- Content wrapper -->
                     <div class="content-wrapper">

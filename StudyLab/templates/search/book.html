@@ -1,0 +1,142 @@
+{% extends "layout.html" %}
+
+{% load static %}
+
+{% block content %}
+<!-- Content -->
+
+<div class="container-xxl flex-grow-1 container-p-y">
+    {% if key == '' %}
+        <h4 class="fw-bold" style="margin : 10px;">
+            "<span style="color : #E96479;"> 코딩 </span>" 에 관한 책 목록
+        </h4>
+    {% else %}
+        <h4 class="fw-bold" style="margin : 10px;">
+            "<span style="color : #E96479;"> {{key}} </span>" 에 관한 책 목록
+        </h4>
+    {% endif %}
+
+    <br/><br/>
+
+    <div id = "vue_div" class="row mb-5">
+        <div v-if="[[book]] == ''" class="col-md-6 col-xl-4">
+            <div class="card mb-3">
+                <img class="card-img-top" src="{% static 'assets/interface.png' %}" alt="Card image cap" />
+                <div class="card-body">
+                    <h5 class="card-title">해당 키워드에 관한 책을 찾을 수 없습니다.</h5>
+                    <p class="card-text">
+                        올바른 키워드를 입력하여 주세요
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div v-else="" class="col-md-6 col-xl-4" v-for="b in book.items">
+            <div class="card mb-3">
+                <div v-if="[[b.image]] == ''" >
+                    <img  class="card-img-top" src="{% static 'assets/interface.png' %}" alt="Card image cap" style="height:280px;" />
+                </div>
+                <div v-else=""> 
+                    <img class="card-img-top" :src="[[b.image]]" alt="Card image cap" style="height:280px;" />
+                </div>
+                <div class="card-body">
+                    <h5 style="text-align:center" class="card-title">[[b.title]]</h5>
+                    <p class="card-text">
+                        <br/> 
+                        <b> [[b.description.substring(0, 50)]] ... </b> <br/>
+                        <span style="color : green;">
+                            [[b.author]] / [[b.publisher]]
+                        </span>
+                    </p>
+                    <p class="card-text">
+                        발행 &nbsp; : &nbsp; [[b.pubdate.substring(0,4)]]년 [[b.pubdate.substring(4,6)]]월 [[b.pubdate.substring(6,8)]]일
+                        <a :href="[[b.link]]" style="float:right" class="card-link" target='_blank'>구매하러 가기</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="demo-inline-spacing">
+            <!-- Basic Pagination -->
+            <nav style="display:flex;justify-content : center;" aria-label="Page navigation">
+                <ul class="pagination">
+                    
+                    <li v-if="{{page}} != 1" class="page-item first">
+                        <a class="page-link" href="?page=1&keyword={{key}}">
+                            <i class="tf-icon fa-solid fa-angles-left"></i>                                
+                        </a>
+                    </li>
+
+                    <li v-if="{{page}} != 1" class="page-item prev">
+                        <a class="page-link" :href=`?p=${pages-1}&keyword={{key}}`>
+                            <i class="tf-icon fa-solid fa-angle-left"></i>                                
+                        </a>
+                    </li>
+                    <li v-else="" class="page-item">
+                        <a class="page-link">❌</a>
+                    </li>
+                    
+                    <li class="page-item active">
+                        <a class="page-link">{{page}} / [[end_page]]</a>
+                    </li>
+                    
+                    <li v-if="[[end_page]] > {{page}}" class="page-item next">
+                        <a class="page-link" :href=`?p=${pages+1}&keyword={{key}}`>
+                            <i class="tf-icon fa-solid fa-angle-right"></i>                                
+                        </a>
+                    </li>
+
+                    <li v-if="[[end_page]] > {{page}}" class="page-item last">
+                        <a class="page-link" :href=`?p=${end_page}&keyword={{key}}`>
+                            <i class="tf-icon fa-solid fa-angles-right"></i>                                
+                        </a>
+                    </li>                
+                    <li v-else="" class="page-item">
+                        <a class="page-link">❌</a>
+                    </li>
+              </ul>
+            </nav>
+            <!--/ Basic Pagination -->
+        </div>
+    </div>
+    <!--/ Images -->
+</div>
+<!-- / Content -->
+{% endblock %}
+
+{% block script %}
+<script type="text/javascript">
+    let vm = new Vue({
+        delimiters: ['[[', ']]'],
+        el: '#vue_div',
+        data: {
+            book : null,
+            pages : {{page}},
+            end_page : null
+        },
+        mounted() {
+            this.getBooks();
+        },
+        methods: {
+            getBooks: function () {
+                $("#vue_div").LoadingOverlay("show");
+                
+                axios.get(
+                    `${ninja_domain}/api/search/books?keyword={{key}}&page={{page}}`, {
+                        headers : {
+                            'Content-Type' : 'application/json',
+                            'Authorization' : 'Bearer {{token}}'
+                        }
+                    }
+                    
+                ).then(function (response) {
+                    vm.book = response.data;
+                    vm.end_page = response.data.end_page
+                }).catch(function (e) {
+                }).finally(function () {
+                    
+                });
+                $("#vue_div").LoadingOverlay("hide");
+            }
+        }
+    })
+</script>
+{% endblock %}
