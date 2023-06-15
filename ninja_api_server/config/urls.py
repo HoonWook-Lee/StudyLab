@@ -17,6 +17,23 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
+# View 함수 + Ninja API
+from core.views import *
+
+# static 파일
+from django.urls import re_path as url
+from django.views.static import serve
+from django.conf import settings
+
 urlpatterns = [
     path('admin/', admin.site.urls),
+
+    # 메인 화면 = docs
+    path('', index, name='index'),
+
+    # Ninja API
+    path('api/', api.urls),
+
+    # uvicorn 에서 static 파일 불러오기 (UI 미사용 시 제거 가능)
+    url(r'^static/(?P<path>.*)$', serve, {'document_root' : settings.STATIC_ROOT}),
 ]
