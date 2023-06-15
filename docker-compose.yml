@@ -53,6 +53,25 @@ services:
         
         command: ['sh', './docker_settings/studylab.sh']
 
+    # Ninja API 설정
+    hw-ninja-api:
+        user: python
+        container_name: hw-ninja-api
+        image: hw-ninja-api
+        build: ./ninja_api_server/
+        volumes:
+            - ./ninja_api_server/:/var/www/ninja_api_server
+            - hwvolume:/var/lib/mysql
+        ports:
+            - '8080:8080'
+        depends_on:
+            - hw-db
+        networks:
+            - hwnet
+        restart: always
+
+        command: ['sh', './docker_settings/studylab.sh']
+
     # MySQL 설정
     hw-db:
         container_name: hw-db

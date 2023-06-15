@@ -32,10 +32,63 @@ os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = 'true' # 비동기 쿼리 조회
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env('SECRET_KEY')
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+ENV = os.environ.get("DJANGO_ENV", "dev")
 
-ALLOWED_HOSTS = []
+# 배포 설정
+if ENV == 'dev':
+    DEBUG = True
+    ALLOWED_HOSTS = eval(env('DEV_ALLOWED_HOSTS'))
+
+    # CORS 허용 호스트
+    CORS_ORIGIN_WHITELIST = (
+        eval(env('CORS_DEV_WHITELIST'))
+    )
+
+    # 쿠키 허용
+    CORS_ALLOW_CREDENTIALS = True
+
+    # MySQL 설정
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': env('DB_SUB_NAME'),
+            'USER': env('DB_SUB_USER'),
+            'PASSWORD': env('DB_SUB_PASSWORD'),
+            'HOST': env('DB_SUB_HOST'),
+            'PORT': env('DB_SUB_PORT'),
+            'OPTIONS': {
+                'autocommit': True,
+                'charset': 'utf8mb4'
+            }
+        }
+    }
+else:
+    DEBUG = False
+    ALLOWED_HOSTS = eval(env('DEPLOY_ALLOWED_HOSTS'))
+
+    # CORS 허용 호스트 : 배포 시 해당 도메인 주소로 변경
+    CORS_ORIGIN_WHITELIST = (
+        eval(env('CORS_DEPLOY_WHITELIST'))
+    )
+
+    # 쿠키 허용
+    CORS_ALLOW_CREDENTIALS = True
+
+    # MySQL 설정
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': env('DB_NAME'),
+            'USER': env('DB_USER'),
+            'PASSWORD': env('DB_PASSWORD'),
+            'HOST': env('DB_HOST'),
+            'PORT': env('DB_PORT'),
+            'OPTIONS': {
+                'autocommit': True,
+                'charset': 'utf8mb4'
+            }
+        }
+    }
 
 
 # Application definition
@@ -49,11 +102,13 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'core.apps.CoreConfig',
     'ninja',
-    'ninja_extra',
-    'ninja_jwt',
+    'ninja_extra', # pip install django-ninja-extra
+    'ninja_jwt',   # pip install django-ninja-jwt
+    'corsheaders', # pip install django-cors-headers
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware', # 맨 위에 배치
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -104,12 +159,12 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
 
 
 # Password validation
