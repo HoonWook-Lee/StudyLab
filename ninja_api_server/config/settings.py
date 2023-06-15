@@ -24,6 +24,8 @@ environ.Env.read_env(
     env_file=os.path.join(BASE_DIR, '.env')
 )
 
+os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = 'true' # 비동기 쿼리 조회
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
