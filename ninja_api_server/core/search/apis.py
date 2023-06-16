@@ -1,11 +1,14 @@
 from ninja import Router
 from ninja_jwt.authentication import JWTAuth
+from ninja.pagination import paginate, PageNumberPagination
 from django.http.response import JsonResponse
 from math import ceil
 from aiohttp import ClientSession
 from asyncio import gather
+from typing import List
 from core.search.book_func import *
 from core.producer import publish
+from core.search.schemas import BookSchema
 
 
 router = Router()
@@ -29,7 +32,7 @@ async def search_book(request, keyword : str, page : int = 1):
 
     return JsonResponse(res, status=books.status_code, safe=False)
 
-@router.get('/crawling', tags=['검색 API 모음'], summary='도서 크롤링 API')
+@router.get('/crawling', tags=['검색 API 모음'], summary='도서 크롤링 API', auth=JWTAuth())
 async def crawling_book(request):
     """
     # 비제이퍼블릭 홈페이지 크롤링 API 입니다.
@@ -66,3 +69,9 @@ async def crawling_book(request):
             res = {'message' : '데이터 최신화 완료'}
 
     return JsonResponse(res, status=200, safe=False)
+
+@router.get('/crawling-books', tags=['검색 API 모음'], summary='수집한 도서 API', response=List[BookSchema], auth=JWTAuth())
+@paginate(PageNumberPagination, page_size=9)
+def crawling_books(request):
+
+    return Crawling.objects.all()
