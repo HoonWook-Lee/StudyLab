@@ -102,9 +102,11 @@ async def crawling_book_func(session, url, i):
             content = txt.find_all('p', 'txt_thumb')
             # date인 첫 번째 span 태그 수집
             date = txt.find('span', 'date')
-            
+            # a 링크의 href 값 수집
+            link = txt.find('a', 'link_thumb')
+
             # None을 제외한 나머지 내용 수집
             if title is not None and content is not None and date is not None:
-                res.append(dict(title=title.text, content=content[-1].text, date=date.text))
+                res.append(dict(title=title.text, content=content[-1].text, date=date.text, link=link.attrs['href']))
             
     return res

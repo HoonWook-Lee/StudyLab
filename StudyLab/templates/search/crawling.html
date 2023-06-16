@@ -6,50 +6,39 @@
 <!-- Content -->
 
 <div class="container-xxl flex-grow-1 container-p-y">
-    {% if key == '' %}
-        <h4 class="fw-bold" style="margin : 10px;">
-            "<span style="color : #E96479;"> 코딩 </span>" 에 관한 책 목록
-        </h4>
-    {% else %}
-        <h4 class="fw-bold" style="margin : 10px;">
-            "<span style="color : #E96479;"> {{key}} </span>" 에 관한 책 목록
-        </h4>
-    {% endif %}
+    
+    <h4 class="fw-bold" style="margin : 10px; text-align : center;">
+        {{message}}
+    </h4>
 
     <br/><br/>
 
     <div id = "vue_div" class="row mb-5">
-        <div v-if="[[book]] == ''" class="col-md-6 col-xl-4">
+        <div v-if="[[books]] == ''" class="col-md-6 col-xl-4">
             <div class="card mb-3">
                 <img class="card-img-top" src="{% static 'assets/interface.png' %}" alt="Card image cap" />
                 <div class="card-body">
-                    <h5 class="card-title">해당 키워드에 관한 책을 찾을 수 없습니다.</h5>
+                    <h5 class="card-title">수집된 책 정보가 없습니다..</h5>
                     <p class="card-text">
-                        올바른 키워드를 입력하여 주세요
+                        잠시만 기다려 주세요.
                     </p>
                 </div>
             </div>
         </div>
-        <div v-else="" class="col-md-6 col-xl-4" v-for="b in book.items">
+        <div v-else="" class="col-md-6 col-xl-4" v-for="b in books.items">
             <div class="card mb-3">
-                <div v-if="[[b.image]] == ''" >
+                <div>
                     <img  class="card-img-top" src="{% static 'assets/interface.png' %}" alt="Card image cap" style="height:280px;" />
-                </div>
-                <div v-else=""> 
-                    <img class="card-img-top" :src="[[b.image]]" alt="Card image cap" style="height:280px;" />
                 </div>
                 <div class="card-body">
                     <h5 style="text-align:center" class="card-title">[[b.title]]</h5>
                     <p class="card-text">
                         <br/> 
-                        <b> [[b.description.substring(0, 50)]] ... </b> <br/>
-                        <span style="color : green;">
-                            [[b.author]] / [[b.publisher]]
-                        </span>
+                        <b> [[b.content.substring(0, 50)]] ... </b> <br/>
                     </p>
                     <p class="card-text">
-                        발행 &nbsp; : &nbsp; [[b.pubdate.substring(0,4)]]년 [[b.pubdate.substring(4,6)]]월 [[b.pubdate.substring(6,8)]]일
-                        <a :href="[[b.link]]" style="float:right" class="card-link" target='_blank'>구매하러 가기</a>
+                        발행 &nbsp; : &nbsp; [[b.date]]
+                        <a :href=`https://bjpublic.tistory.com${b.link}` style="float:right" class="card-link" target='_blank'>정보 확인 하기</a>
                     </p>
                 </div>
             </div>
@@ -60,13 +49,13 @@
                 <ul class="pagination">
                     
                     <li v-if="{{page}} != 1" class="page-item first">
-                        <a class="page-link" href="?p=1&keyword={{key}}">
+                        <a class="page-link" href="?p=1">
                             <i class="tf-icon fa-solid fa-angles-left"></i>                                
                         </a>
                     </li>
 
                     <li v-if="{{page}} != 1" class="page-item prev">
-                        <a class="page-link" :href=`?p=${pages-1}&keyword={{key}}`>
+                        <a class="page-link" :href=`?p=${pages-1}`>
                             <i class="tf-icon fa-solid fa-angle-left"></i>                                
                         </a>
                     </li>
@@ -79,13 +68,13 @@
                     </li>
                     
                     <li v-if="[[end_page]] > {{page}}" class="page-item next">
-                        <a class="page-link" :href=`?p=${pages+1}&keyword={{key}}`>
+                        <a class="page-link" :href=`?p=${pages+1}`>
                             <i class="tf-icon fa-solid fa-angle-right"></i>                                
                         </a>
                     </li>
 
                     <li v-if="[[end_page]] > {{page}}" class="page-item last">
-                        <a class="page-link" :href=`?p=${end_page}&keyword={{key}}`>
+                        <a class="page-link" :href=`?p=${end_page}`>
                             <i class="tf-icon fa-solid fa-angles-right"></i>                                
                         </a>
                     </li>                
@@ -108,19 +97,18 @@
         delimiters: ['[[', ']]'],
         el: '#vue_div',
         data: {
-            book : null,
+            books : null,
             pages : {{page}},
             end_page : null
         },
         mounted() {
+            this.checkBooks();
             this.getBooks();
         },
         methods: {
-            getBooks: function () {
-                $("#vue_div").LoadingOverlay("show");
-                
+            checkBooks: function () {
                 axios.get(
-                    `${ninja_domain}/api/search/books?keyword={{key}}&page={{page}}`, {
+                    `${ninja_domain}/api/search/crawling`, {
                         headers : {
                             'Content-Type' : 'application/json',
                             'Authorization' : 'Bearer {{token}}'
@@ -128,12 +116,36 @@
                     }
                     
                 ).then(function (response) {
-                    vm.book = response.data;
-                    vm.end_page = response.data.end_page
+                    if (response.data.message == '데이터 최신화 완료') {
+                        location.reload();
+                    }
                 }).catch(function (e) {
-                }).finally(function () {
-                    $("#vue_div").LoadingOverlay("hide");    
-                });
+                    if (e.response.data.message == null) {
+                        Swal.fire('현재 오류 확인 작업 중 입니다. \n 잠시 후 다시 이용해주세요.', '', 'error')
+                    }else{
+                        Swal.fire(e.response.data.message, '', 'error')
+                    }
+                })
+            },
+            getBooks: function () {
+                axios.get(
+                    `${ninja_domain}/api/search/crawling-books?page={{page}}`, {
+                        headers : {
+                            'Content-Type' : 'application/json',
+                            'Authorization' : 'Bearer {{token}}'
+                        }
+                    }
+                    
+                ).then(function (response) {
+                    vm.books = response.data
+                    vm.end_page = Math.ceil(response.data.count/9)
+                }).catch(function (e) {
+                    if (e.response.data.message == null) {
+                        Swal.fire('현재 오류 확인 작업 중 입니다. \n 잠시 후 다시 이용해주세요.', '', 'error')
+                    }else{
+                        Swal.fire(e.response.data.message, '', 'error')
+                    }
+                })
             }
         }
     })

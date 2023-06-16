@@ -36,6 +36,7 @@ def callback(ch, method, properties, body):
                     instance.title = i['title']
                     instance.content = i['content']
                     instance.date = i['date']
+                    instance.link = i['link']
                     instance.save()
 
 channel.basic_consume(queue='StudyLab', on_message_callback=callback, auto_ack=True)

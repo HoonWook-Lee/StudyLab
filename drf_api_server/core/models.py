@@ -53,6 +53,7 @@ class Crawling(models.Model):
     title = models.CharField(max_length=100) # 문자열 최대 100자
     content = models.TextField() # 큰 텍스트 필드
     date = models.CharField(max_length=100) # 문자열 최대 100자
+    link = models.CharField(max_length=50, default='/') # 문자열 최대 50자
 
     @classmethod
     def check_data(cls):
