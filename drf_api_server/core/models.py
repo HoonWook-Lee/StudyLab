@@ -47,3 +47,19 @@ class Memos(TimeStampedModel):
         msg = '좋은 의견 감사합니다.'
         
         return msg
+    
+# 크롤링 데이터 모델 생성
+class Crawling(models.Model):
+    title = models.CharField(max_length=100) # 문자열 최대 100자
+    content = models.TextField() # 큰 텍스트 필드
+    date = models.CharField(max_length=100) # 문자열 최대 100자
+
+    @classmethod
+    def check_data(cls):
+        # 데이터 개수
+        num = cls.objects.count()
+
+        return num
+
+class Crawling_message(TimeStampedModel):
+    message = models.CharField(max_length=100) # 문자열 최대 100자
