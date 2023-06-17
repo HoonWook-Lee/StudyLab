@@ -89,3 +89,23 @@ def pw_change(request):
         form = ChangeForm()
 
         return render(request, 'user/change.html', {'form' : form, 'user_id' : user})
+    
+# 비밀번호 변경
+@login_required
+def user_withdrawal(request):
+
+    # sidebar active
+    nav_check = 'sidebar_main'
+
+    # DELETE 요청 확인
+    if request.method == 'POST':
+        form = WithdrawalForm(request.POST)
+        res = (
+            lambda x : x.delete(x.cleaned_data) if x.is_valid() else ('올바르지 않은 데이터 입니다.', 'error', 422)
+        )(form)
+
+        return JsonResponse(data=dict(msg=res[0], check=res[1]), status=res[2], safe=False)
+    else:
+        form = WithdrawalForm()
+
+        return render(request, 'user/delete.html', {'nav_check' : nav_check, 'form' : form})

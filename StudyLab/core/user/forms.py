@@ -190,3 +190,19 @@ class ChangeForm(forms.Form):
             res = ('비밀번호 변경이 완료되었습니다.', 'success',  200)
 
         return res
+    
+# 비밀번호 변경 Form
+class WithdrawalForm(forms.Form):
+    user_id = forms.CharField(max_length=100, required=True, widget=forms.HiddenInput(attrs={
+        'id' : 'user_id', 'class' : 'form-control'
+    }))
+
+    def delete(self, data):
+        # 유저 확인
+        user = Users.objects.get(pk=data.get('user_id'))
+
+        user.delete()
+
+        res = ('탈퇴가 완료되었습니다.', 'success',  200)
+
+        return res

@@ -20,4 +20,7 @@ urlpatterns = [
 
     # 비밀번호 변경
     path('change', pw_change, name='pw_change'),
+
+    # 회원 탈퇴
+    path('withdrawal', user_withdrawal, name='user_withdrawal'),
 ]
