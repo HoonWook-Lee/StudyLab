@@ -150,3 +150,13 @@ class AuthTestCase(TestCase):
         request = c.post('/user/change', body)
 
         self.assertEqual(request.status_code, 200)
+
+    # 회원 탈퇴 Test
+    def test_delete(self):
+        c = Client()
+
+        # 로그인
+        body = {'user_id' : '1'}
+        request = c.post('/user/withdrawal', body)
+
+        self.assertEqual(request.status_code, 302)
