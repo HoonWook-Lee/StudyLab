@@ -1,4 +1,5 @@
 from datetime import datetime
+from boto3.dynamodb.conditions import Key
 from core.models import Memos, Users
 from core.dynamodb import Comments
 from core.errors import *
@@ -25,7 +26,6 @@ class CommentFunc:
 
     @time_logger
     def create(self, writer, comment):
-
         try:
             # 등록된 메모 및 사용자 체크
             memo = Memos.objects.filter(id=self.memo)
@@ -71,3 +71,23 @@ class CommentFunc:
 
         else:
             self.json['msg'] = '댓글 등록이 완료되었습니다.'
+
+    def view(self):
+        try:
+            # Memo ID값이 일치하는 댓글 수집
+            resp = Comments.query(KeyConditionExpression=Key('Memo').eq(self.memo))['Items']
+
+            # 댓글 유무 확인
+            if not resp:
+                self.json['msg'] = '작성된 댓글이 없습니다. 댓글을 작성하여 주세요.'
+            else:
+                # 필요 없는 항목 삭제
+                for res in resp:
+                    del res['Memo']
+
+                self.json[f'Comments'] = resp
+                    
+        # 알 수 없는 에러 메세지                
+        except:
+            self.json['msg'] = f'알 수 없는 오류 발생 잠시 후 다시 이용해주세요.'
+            self.status_code = 500

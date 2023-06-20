@@ -19,3 +19,16 @@ def comment_write(request, memo : int, writer : str, comment : str):
     serializer.create(writer, comment)
 
     return JsonResponse(serializer.json, status=serializer.status_code, safe=False)
+
+@router.get('/view', tags=['댓글 API 모음'], summary='메모 댓글 리스트 API', auth=JWTAuth())
+def comment_view(request, memo : int):
+    """
+    # 쿼리 파라미터 정보
+    ## &emsp; memo : 메모 ID 정보
+    """
+    # 객체 생성
+    serializer = CommentFunc(memo)
+    # 댓글 리스트
+    serializer.view()
+
+    return JsonResponse(serializer.json, status=serializer.status_code, safe=False)
