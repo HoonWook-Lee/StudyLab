@@ -31,7 +31,7 @@ class CommentFunc:
             memo = Memos.objects.filter(id=self.memo)
             user = Users.objects.filter(username=writer)
 
-            # 등록되지 않은 메모 오류 처리
+            # 등록되지 않은 메모 및 사용자 오류 처리
             if not memo or not user:
                 self.status_code = 404
                 raise NotRegister
@@ -91,3 +91,45 @@ class CommentFunc:
         except:
             self.json['msg'] = f'알 수 없는 오류 발생 잠시 후 다시 이용해주세요.'
             self.status_code = 500
+
+    @time_logger
+    def update(self, created, writer, comment):
+        try:
+            # 등록된 메모 및 사용자 체크
+            memo = Memos.objects.filter(id=self.memo)
+            user = Users.objects.filter(username=writer)
+
+            # 등록되지 않은 메모 및 사용자 오류 처리
+            if not memo or not user:
+                self.status_code = 404
+                raise NotRegister
+
+            # 등록 정보 확인
+            resp = Comments.get_item(Key={ 'Memo' : self.memo, 'Created_at' : created})
+
+            # 댓글 유무 확인
+            if 'Item' in resp:
+                # 수정 권한 확인 후 없다면 수정 불가
+                if writer != resp['Item']['Comment']['Writer']:
+                    self.status_code = 403
+                    raise NotAccess
+                
+                # 댓글 수정
+                item = dict(
+                    Memo = self.memo, Created_at = created,
+                    Comment = dict(Comment=comment, Writer = writer, Updated_at = self.created_at)
+                )
+                Comments.put_item(Item=item)
+            else:
+                self.status_code = 422
+                raise NotComment
+
+        except (NotRegister, NotComment, NotAccess) as e:   # 확인된 에러 메세지
+            self.json['msg'] = f'{e}'
+            
+        except Exception as e:   # 알 수 없는 에러 메세지
+            self.json['msg'] = f'알 수 없는 오류 발생 잠시 후 다시 이용해주세요.'
+            self.status_code = 500
+
+        else:
+            self.json['msg'] = '댓글 수정이 완료되었습니다.'
